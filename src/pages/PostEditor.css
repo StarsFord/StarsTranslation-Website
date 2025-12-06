@@ -1,0 +1,87 @@
+.post-editor {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.editor-header {
+  margin-bottom: 2rem;
+}
+
+.editor-header h1 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.editor-form {
+  max-width: 900px;
+}
+
+.form-section {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form-section h2 {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-actions .btn {
+  padding: 0.75rem 2rem;
+}
+
+.external-link-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.btn-danger {
+  background: #e94560;
+}
+
+.btn-danger:hover {
+  background: #c93850;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.section-description {
+  color: #aaa;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}

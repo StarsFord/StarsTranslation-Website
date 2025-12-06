@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tsx scripts/add-external-links-column.ts:*)",
+      "Bash(pnpm tsx:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

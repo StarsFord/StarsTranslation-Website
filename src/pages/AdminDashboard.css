@@ -1,0 +1,73 @@
+.admin-dashboard {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.admin-posts-table {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.admin-posts-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-posts-table th {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-posts-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.admin-posts-table tbody tr:hover {
+  background-color: var(--background);
+}
+
+.post-title-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.post-title-link:hover {
+  color: var(--primary-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 968px) {
+  .admin-posts-table {
+    overflow-x: auto;
+  }
+
+  .admin-posts-table table {
+    min-width: 800px;
+  }
+}
