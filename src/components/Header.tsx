@@ -6,6 +6,7 @@ import './Header.css';
 const Header = () => {
   const { user, logout, isAuthenticated, isAdmin, isTranslator } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [homepageDropdownOpen, setHomepageDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -27,15 +28,28 @@ const Header = () => {
           </Link>
 
           <nav className={`nav ${mobileMenuOpen ? 'nav-open' : ''}`}>
-            <Link to="/" className="nav-link">All Posts</Link>
-            <Link to="/category/doujin-game" className="nav-link">Doujin Game</Link>
-            <Link to="/category/visual-novel" className="nav-link">Visual Novel</Link>
-            <Link to="/category/doujin-manga" className="nav-link">Doujin Manga</Link>
-            <Link to="/category/admin" className="nav-link">Admin</Link>
+            <div
+              className="nav-dropdown"
+              onMouseEnter={() => setHomepageDropdownOpen(true)}
+              onMouseLeave={() => setHomepageDropdownOpen(false)}
+            >
+              <button className="nav-link dropdown-trigger">
+                Homepage
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              <div className={`dropdown-menu ${homepageDropdownOpen ? 'dropdown-open' : ''}`}>
+                <Link to="/" className="dropdown-item">All Posts</Link>
+                <Link to="/category/doujin-game" className="dropdown-item">Doujin Game</Link>
+                <Link to="/category/visual-novel" className="dropdown-item">Visual Novel</Link>
+                <Link to="/category/doujin-manga" className="dropdown-item">Doujin Manga</Link>
+              </div>
+            </div>
+
+            <Link to="/search" className="nav-link">Search</Link>
 
             {isTranslator() && (
               <Link to="/admin" className="nav-link nav-link-admin">
-                Dashboard
+                Admin
               </Link>
             )}
           </nav>

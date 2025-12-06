@@ -9,6 +9,7 @@ const PostDetail = () => {
   const { slug } = useParams();
   const { isAuthenticated } = useAuth();
   const [post, setPost] = useState(null);
+  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [following, setFollowing] = useState(false);
@@ -25,6 +26,12 @@ const PostDetail = () => {
       const response = await api.get(`/api/posts/${slug}`);
       setPost(response.data);
       setFollowing(response.data.isFollowing);
+
+      // Fetch tags for this post
+      if (response.data.id) {
+        const tagsResponse = await api.get(`/api/tags/post/${response.data.id}`);
+        setTags(tagsResponse.data);
+      }
     } catch (err) {
       console.error('Error fetching post:', err);
       setError('Failed to load post');
@@ -145,6 +152,65 @@ const PostDetail = () => {
           <div className="post-description">
             <h2>Description</h2>
             <p>{post.description}</p>
+          </div>
+        )}
+
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className="post-section tags-section">
+            <h2>Tags</h2>
+            <div className="tags-container">
+              {tags.filter(tag => tag.type_slug === 'platform').length > 0 && (
+                <div className="tag-type-group">
+                  <h3>Platform</h3>
+                  <div className="tags-list">
+                    {tags.filter(tag => tag.type_slug === 'platform').map(tag => (
+                      <Link
+                        key={tag.id}
+                        to={`/search?platform=${tag.slug}`}
+                        className="tag tag-platform"
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {tags.filter(tag => tag.type_slug === 'genre').length > 0 && (
+                <div className="tag-type-group">
+                  <h3>Genre</h3>
+                  <div className="tags-list">
+                    {tags.filter(tag => tag.type_slug === 'genre').map(tag => (
+                      <Link
+                        key={tag.id}
+                        to={`/search?genre=${tag.slug}`}
+                        className="tag tag-genre"
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {tags.filter(tag => tag.type_slug === 'fetish').length > 0 && (
+                <div className="tag-type-group">
+                  <h3>Fetish</h3>
+                  <div className="tags-list">
+                    {tags.filter(tag => tag.type_slug === 'fetish').map(tag => (
+                      <Link
+                        key={tag.id}
+                        to={`/search?fetish=${tag.slug}`}
+                        className="tag tag-fetish"
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

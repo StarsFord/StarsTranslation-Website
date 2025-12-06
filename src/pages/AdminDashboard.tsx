@@ -54,9 +54,14 @@ const AdminDashboard = () => {
       <div className="container">
         <div className="admin-header">
           <h1>Admin Dashboard</h1>
-          <Link to="/admin/post/new" className="btn btn-primary">
-            Create New Post
-          </Link>
+          <div className="header-actions">
+            <Link to="/admin/tags" className="btn btn-secondary">
+              Manage Tags
+            </Link>
+            <Link to="/admin/post/new" className="btn btn-primary">
+              Create New Post
+            </Link>
+          </div>
         </div>
 
         {loading ? (

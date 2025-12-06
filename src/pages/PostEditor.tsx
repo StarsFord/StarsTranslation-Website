@@ -25,6 +25,16 @@ const PostEditor = () => {
     thumbnail_url: ''
   });
 
+  // Tags state
+  const [platforms, setPlatforms] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [fetishes, setFetishes] = useState([]);
+  const [selectedTags, setSelectedTags] = useState({
+    platforms: [],
+    genres: [],
+    fetishes: []
+  });
+
   const [files, setFiles] = useState({
     translated: [],
     original: [],
@@ -60,6 +70,7 @@ const PostEditor = () => {
 
   useEffect(() => {
     fetchCategories();
+    fetchTags();
     if (isEditing) {
       fetchPost();
     }
@@ -71,6 +82,22 @@ const PostEditor = () => {
       setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchTags = async () => {
+    try {
+      const [platformsRes, genresRes, fetishesRes] = await Promise.all([
+        api.get('/api/tags?type=platform'),
+        api.get('/api/tags?type=genre'),
+        api.get('/api/tags?type=fetish')
+      ]);
+
+      setPlatforms(platformsRes.data);
+      setGenres(genresRes.data);
+      setFetishes(fetishesRes.data);
+    } catch (error) {
+      console.error('Error fetching tags:', error);
     }
   };
 
@@ -91,6 +118,16 @@ const PostEditor = () => {
       if (post.external_links && post.external_links.length > 0) {
         setExternalLinks(post.external_links);
       }
+
+      // Fetch tags for this post
+      const tagsResponse = await api.get(`/api/tags/post/${id}`);
+      const postTags = tagsResponse.data;
+
+      setSelectedTags({
+        platforms: postTags.filter(t => t.type_slug === 'platform').map(t => t.id),
+        genres: postTags.filter(t => t.type_slug === 'genre').map(t => t.id),
+        fetishes: postTags.filter(t => t.type_slug === 'fetish').map(t => t.id)
+      });
     } catch (error) {
       console.error('Error fetching post:', error);
       alert('Failed to load post');
@@ -119,6 +156,20 @@ const PostEditor = () => {
       ...prev,
       [type]: Array.from(e.target.files)
     }));
+  };
+
+  const handleTagToggle = (tagType, tagId) => {
+    setSelectedTags(prev => {
+      const currentTags = prev[tagType];
+      const isSelected = currentTags.includes(tagId);
+
+      return {
+        ...prev,
+        [tagType]: isSelected
+          ? currentTags.filter(id => id !== tagId)
+          : [...currentTags, tagId]
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -216,6 +267,26 @@ const PostEditor = () => {
   // Reset progress
 
   setUploadProgress({ current: 0, total: 0, fileName: "", percentage: 0 });
+
+    // Save tags - delete all existing tags first, then add selected ones
+    if (isEditing) {
+      // Get current tags to delete them
+      const currentTagsRes = await api.get(`/api/tags/post/${postId}`);
+      for (const tag of currentTagsRes.data) {
+        await api.delete(`/api/tags/post/${postId}/${tag.id}`);
+      }
+    }
+
+    // Add all selected tags
+    const allSelectedTags = [
+      ...selectedTags.platforms,
+      ...selectedTags.genres,
+      ...selectedTags.fetishes
+    ];
+
+    for (const tagId of allSelectedTags) {
+      await api.post(`/api/tags/post/${postId}`, { tag_id: tagId });
+    }
 
     alert(isEditing ? 'Post updated successfully!' : 'Post created successfully!');
       navigate('/admin');
@@ -344,6 +415,61 @@ const PostEditor = () => {
                 rows={10}
                 placeholder="Detailed information, instructions, etc."
               />
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h2>Tags</h2>
+            <p className="section-description">
+              Select tags to categorize your post for better searchability
+            </p>
+
+            <div className="tags-group">
+              <label className="label">Platform</label>
+              <div className="tags-checkbox-grid">
+                {platforms.map(platform => (
+                  <label key={platform.id} className="tag-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={selectedTags.platforms.includes(platform.id)}
+                      onChange={() => handleTagToggle('platforms', platform.id)}
+                    />
+                    <span>{platform.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="tags-group">
+              <label className="label">Genre</label>
+              <div className="tags-checkbox-grid">
+                {genres.map(genre => (
+                  <label key={genre.id} className="tag-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={selectedTags.genres.includes(genre.id)}
+                      onChange={() => handleTagToggle('genres', genre.id)}
+                    />
+                    <span>{genre.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="tags-group">
+              <label className="label">Fetish</label>
+              <div className="tags-checkbox-grid">
+                {fetishes.map(fetish => (
+                  <label key={fetish.id} className="tag-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={selectedTags.fetishes.includes(fetish.id)}
+                      onChange={() => handleTagToggle('fetishes', fetish.id)}
+                    />
+                    <span>{fetish.name}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 

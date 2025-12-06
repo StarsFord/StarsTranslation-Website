@@ -31,6 +31,7 @@ import commentsRoutes from './routes/comments.js';
 import uploadRoutes from './routes/upload.js';
 import categoriesRoutes from './routes/categories.js';
 import notificationsRoutes from './routes/notifications.js';
+import tagsRoutes from './routes/tags.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -71,6 +72,7 @@ app.use('/api/comments', commentsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/tags', tagsRoutes);
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {
