@@ -5,7 +5,7 @@ import api from '../utils/api';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const { isTranslator } = useAuth();
+  const { isTranslator, isAdmin } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,6 +55,11 @@ const AdminDashboard = () => {
         <div className="admin-header">
           <h1>Admin Dashboard</h1>
           <div className="header-actions">
+            {isAdmin() && (
+              <Link to="/admin/users" className="btn btn-secondary">
+                Manage Users
+              </Link>
+            )}
             <Link to="/admin/tags" className="btn btn-secondary">
               Manage Tags
             </Link>

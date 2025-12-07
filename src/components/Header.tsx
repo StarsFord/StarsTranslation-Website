@@ -47,6 +47,10 @@ const Header = () => {
 
             <Link to="/search" className="nav-link">Search</Link>
 
+            {isAuthenticated() && (
+              <Link to="/following" className="nav-link">Following</Link>
+            )}
+
             {isTranslator() && (
               <Link to="/admin" className="nav-link nav-link-admin">
                 Admin

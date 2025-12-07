@@ -75,3 +75,58 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction): v
     next();
   });
 };
+
+// Check if user is banned
+export const checkBan = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.user) {
+    next();
+    return;
+  }
+
+  try {
+    const user = db.prepare(`
+      SELECT is_banned, ban_reason, ban_expires_at
+      FROM users
+      WHERE id = ?
+    `).get(req.user.id) as any;
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Check if user is banned
+    if (user.is_banned) {
+      // Check if ban has expired
+      if (user.ban_expires_at) {
+        const expiryDate = new Date(user.ban_expires_at);
+        const now = new Date();
+
+        if (now > expiryDate) {
+          // Ban expired, unban the user
+          db.prepare(`
+            UPDATE users
+            SET is_banned = 0, ban_reason = NULL, ban_expires_at = NULL, banned_at = NULL, banned_by = NULL
+            WHERE id = ?
+          `).run(req.user.id);
+
+          next();
+          return;
+        }
+      }
+
+      // User is still banned
+      res.status(403).json({
+        error: 'Your account has been banned',
+        reason: user.ban_reason,
+        expiresAt: user.ban_expires_at
+      });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    console.error('Error checking ban status:', error);
+    next();
+  }
+};

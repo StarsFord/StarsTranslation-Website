@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(tsx scripts/add-external-links-column.ts:*)",
-      "Bash(pnpm tsx:*)"
+      "Bash(pnpm tsx:*)",
+      "Bash(timeout 5 pnpm run server:*)"
     ],
     "deny": [],
     "ask": []

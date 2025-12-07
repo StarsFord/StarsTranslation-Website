@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '../database/db.js';
-import { authenticateToken, requireRole, optionalAuth } from '../middleware/auth.js';
+import { authenticateToken, requireRole, optionalAuth, checkBan } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -21,7 +21,7 @@ router.get('/', optionalAuth, (req, res) => {
       FROM posts p
       JOIN categories c ON p.category_id = c.id
       JOIN users u ON p.author_id = u.id
-      WHERE 1=1
+      WHERE p.status = 'published'
     `;
 
     const params = [];
@@ -154,7 +154,7 @@ router.get('/:slug', optionalAuth, (req, res) => {
 });
 
 // Create new post (admin/translator only)
-router.post('/', authenticateToken, requireRole('admin', 'translator'), (req, res) => {
+router.post('/', authenticateToken, checkBan, requireRole('admin', 'translator'), (req, res) => {
   try {
     const { title, slug, description, content, category_id, is_translated, thumbnail_url, external_links } = req.body;
 
@@ -162,12 +162,15 @@ router.post('/', authenticateToken, requireRole('admin', 'translator'), (req, re
       return res.status(400).json({ error: 'Title, slug, and category are required' });
     }
 
+    // Determine post status: admin posts are published, translator posts are pending
+    const status = req.user.role === 'admin' ? 'published' : 'pending';
+
     // Stringify external_links if provided
     const linksJson = external_links ? JSON.stringify(external_links.filter((l: any) => l.label && l.url)) : null;
 
     const stmt = db.prepare(`
-      INSERT INTO posts (title, slug, description, content, category_id, author_id, is_translated, thumbnail_url, external_links)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO posts (title, slug, description, content, category_id, author_id, is_translated, thumbnail_url, external_links, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -179,10 +182,11 @@ router.post('/', authenticateToken, requireRole('admin', 'translator'), (req, re
       req.user.id,
       is_translated ? 1 : 0,
       thumbnail_url,
-      linksJson
+      linksJson,
+      status
     );
 
-    console.log('✅ Post created with ID:', result.lastInsertRowid);
+    console.log(`✅ Post created with ID: ${result.lastInsertRowid} (status: ${status})`);
 
     const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(result.lastInsertRowid);
 
@@ -204,16 +208,22 @@ router.post('/', authenticateToken, requireRole('admin', 'translator'), (req, re
 });
 
 // Update post (admin/translator only)
-router.put('/:id', authenticateToken, requireRole('admin', 'translator'), (req, res) => {
+router.put('/:id', authenticateToken, checkBan, requireRole('admin', 'translator'), (req, res) => {
   try {
     const { title, slug, description, content, category_id, is_translated, thumbnail_url, external_links } = req.body;
 
     // Stringify external_links if provided
     const linksJson = external_links ? JSON.stringify(external_links.filter((l: any) => l.label && l.url)) : null;
 
+    // Determine status: if translator updates, set to pending again (unless already published by admin)
+    let statusUpdate = '';
+    if (req.user.role === 'translator') {
+      statusUpdate = ', status = \'pending\'';
+    }
+
     const stmt = db.prepare(`
       UPDATE posts
-      SET title = ?, slug = ?, description = ?, content = ?, category_id = ?, is_translated = ?, thumbnail_url = ?, external_links = ?, updated_at = CURRENT_TIMESTAMP
+      SET title = ?, slug = ?, description = ?, content = ?, category_id = ?, is_translated = ?, thumbnail_url = ?, external_links = ?${statusUpdate}, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
@@ -283,8 +293,35 @@ router.post('/:id/versions', authenticateToken, requireRole('admin', 'translator
   }
 });
 
+// Get posts user is following
+router.get('/following', authenticateToken, checkBan, (req, res) => {
+  try {
+    const posts = db.prepare(`
+      SELECT
+        p.*,
+        c.name as category_name,
+        c.slug as category_slug,
+        u.username as author_name,
+        u.avatar_url as author_avatar,
+        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
+        (SELECT version_number FROM post_versions WHERE post_id = p.id ORDER BY created_at DESC LIMIT 1) as latest_version
+      FROM posts p
+      JOIN categories c ON p.category_id = c.id
+      JOIN users u ON p.author_id = u.id
+      JOIN post_followers pf ON pf.post_id = p.id
+      WHERE pf.user_id = ? AND p.status = 'published'
+      ORDER BY p.updated_at DESC
+    `).all(req.user.id);
+
+    res.json(posts);
+  } catch (error) {
+    console.error('Error fetching following posts:', error);
+    res.status(500).json({ error: 'Failed to fetch following posts' });
+  }
+});
+
 // Follow/Unfollow post
-router.post('/:id/follow', authenticateToken, (req, res) => {
+router.post('/:id/follow', authenticateToken, checkBan, (req, res) => {
   try {
     const existing = db.prepare('SELECT id FROM post_followers WHERE user_id = ? AND post_id = ?')
       .get(req.user.id, req.params.id);

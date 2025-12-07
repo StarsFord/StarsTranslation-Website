@@ -124,7 +124,7 @@ router.get('/pending-posts', authenticateToken, requireRole('admin'), (req: Requ
   try {
     const posts = db.prepare(`
       SELECT p.*, c.name as category_name, c.slug as category_slug,
-             u.username as author_name, u.avatar_url as author_avatar
+      u.username as author_name, u.avatar_url as author_avatar
       FROM posts p
       JOIN categories c ON p.category_id = c.id
       JOIN users u ON p.author_id = u.id
