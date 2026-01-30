@@ -3,11 +3,32 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './Comments.css';
 
-const Comment = ({ comment, onReply, onEdit, onDelete }) => {
+interface CommentData {
+  id: number;
+  post_id: number;
+  user_id: number;
+  parent_id: number | null;
+  content: string;
+  username: string;
+  avatar_url: string | null;
+  role: string;
+  created_at: string;
+  updated_at: string;
+  replies?: CommentData[];
+}
+
+interface CommentProps {
+  comment: CommentData;
+  onReply: () => void;
+  onEdit: (commentId: number, content: string) => Promise<void>;
+  onDelete: (commentId: number) => Promise<void>;
+}
+
+const Comment: React.FC<CommentProps> = ({ comment, onReply, onEdit, onDelete }) => {
   const { user, isAdmin } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(comment.content);
-  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editContent, setEditContent] = useState<string>(comment.content);
+  const [showReplyForm, setShowReplyForm] = useState<boolean>(false);
 
   const canEdit = user && (user.id === comment.user_id || isAdmin());
   const canDelete = user && (user.id === comment.user_id || isAdmin());
@@ -17,7 +38,7 @@ const Comment = ({ comment, onReply, onEdit, onDelete }) => {
     setIsEditing(false);
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -109,11 +130,18 @@ const Comment = ({ comment, onReply, onEdit, onDelete }) => {
   );
 };
 
-const CommentForm = ({ postId, parentId, onSubmit, onCancel }) => {
-  const [content, setContent] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+interface CommentFormProps {
+  postId: number;
+  parentId?: number | null;
+  onSubmit: () => void;
+  onCancel?: () => void;
+}
 
-  const handleSubmit = async (e) => {
+const CommentForm: React.FC<CommentFormProps> = ({ postId, parentId, onSubmit, onCancel }) => {
+  const [content, setContent] = useState<string>('');
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
 
@@ -158,10 +186,14 @@ const CommentForm = ({ postId, parentId, onSubmit, onCancel }) => {
   );
 };
 
-const Comments = ({ postId }) => {
+interface CommentsProps {
+  postId: number;
+}
+
+const Comments: React.FC<CommentsProps> = ({ postId }) => {
   const { isAuthenticated } = useAuth();
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState<CommentData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     fetchComments();
@@ -179,7 +211,7 @@ const Comments = ({ postId }) => {
     }
   };
 
-  const handleEdit = async (commentId, content) => {
+  const handleEdit = async (commentId: number, content: string): Promise<void> => {
     try {
       await api.put(`/api/comments/${commentId}`, { content });
       fetchComments();
@@ -189,7 +221,7 @@ const Comments = ({ postId }) => {
     }
   };
 
-  const handleDelete = async (commentId) => {
+  const handleDelete = async (commentId: number): Promise<void> => {
     if (!confirm('Are you sure you want to delete this comment?')) return;
 
     try {

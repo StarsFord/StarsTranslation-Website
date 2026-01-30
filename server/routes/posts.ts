@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { db } from '../database/db.js';
 import { authenticateToken, requireRole, optionalAuth, checkBan } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Get all posts with filters
-router.get('/', optionalAuth, (req, res) => {
+router.get('/', optionalAuth, (req: Request, res: Response) => {
   try {
     const { category, translated, limit = 20, offset = 0 } = req.query;
 
@@ -24,7 +24,7 @@ router.get('/', optionalAuth, (req, res) => {
       WHERE p.status = 'published'
     `;
 
-    const params = [];
+    const params: any[] = [];
 
     if (category) {
       query += ' AND c.slug = ?';
@@ -37,7 +37,7 @@ router.get('/', optionalAuth, (req, res) => {
     }
 
     query += ' ORDER BY p.updated_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    params.push(parseInt(String(limit)), parseInt(String(offset)));
 
     const posts = db.prepare(query).all(...params);
 
@@ -156,6 +156,10 @@ router.get('/:slug', optionalAuth, (req, res) => {
 // Create new post (admin/translator only)
 router.post('/', authenticateToken, checkBan, requireRole('admin', 'translator'), (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const { title, slug, description, content, category_id, is_translated, thumbnail_url, external_links } = req.body;
 
     if (!title || !slug || !category_id) {
@@ -197,7 +201,7 @@ router.post('/', authenticateToken, checkBan, requireRole('admin', 'translator')
 
     console.log('📄 Retrieved post:', post);
     res.status(201).json(post);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating post:', error);
     if (error.code === 'SQLITE_CONSTRAINT') {
       res.status(400).json({ error: 'Post with this slug already exists' });
@@ -210,6 +214,10 @@ router.post('/', authenticateToken, checkBan, requireRole('admin', 'translator')
 // Update post (admin/translator only)
 router.put('/:id', authenticateToken, checkBan, requireRole('admin', 'translator'), (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const { title, slug, description, content, category_id, is_translated, thumbnail_url, external_links } = req.body;
 
     // Stringify external_links if provided
@@ -273,6 +281,10 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req, res) => {
 // Add version to post
 router.post('/:id/versions', authenticateToken, requireRole('admin', 'translator'), (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const { version_number, changelog } = req.body;
 
     const stmt = db.prepare(`
@@ -296,6 +308,10 @@ router.post('/:id/versions', authenticateToken, requireRole('admin', 'translator
 // Get posts user is following
 router.get('/following', authenticateToken, checkBan, (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const posts = db.prepare(`
       SELECT
         p.*,
@@ -323,6 +339,10 @@ router.get('/following', authenticateToken, checkBan, (req, res) => {
 // Follow/Unfollow post
 router.post('/:id/follow', authenticateToken, checkBan, (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const existing = db.prepare('SELECT id FROM post_followers WHERE user_id = ? AND post_id = ?')
       .get(req.user.id, req.params.id);
 

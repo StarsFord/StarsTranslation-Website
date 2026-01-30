@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { db } from '../database/db.js';
 import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Get comments for a post
-router.get('/post/:postId', optionalAuth, (req, res) => {
+router.get('/post/:postId', optionalAuth, (req: Request, res: Response) => {
   try {
     const comments = db.prepare(`
       SELECT
@@ -20,14 +20,14 @@ router.get('/post/:postId', optionalAuth, (req, res) => {
     `).all(req.params.postId);
 
     // Build threaded comments structure
-    const commentMap = {};
-    const rootComments = [];
+    const commentMap: Record<number, any> = {};
+    const rootComments: any[] = [];
 
-    comments.forEach(comment => {
+    comments.forEach((comment: any) => {
       commentMap[comment.id] = { ...comment, replies: [] };
     });
 
-    comments.forEach(comment => {
+    comments.forEach((comment: any) => {
       if (comment.parent_id) {
         if (commentMap[comment.parent_id]) {
           commentMap[comment.parent_id].replies.push(commentMap[comment.id]);
@@ -45,9 +45,13 @@ router.get('/post/:postId', optionalAuth, (req, res) => {
 });
 
 // Create comment (authenticated users only)
-router.post('/', authenticateToken, (req, res) => {
+router.post('/', authenticateToken, (req: Request, res: Response) => {
   try {
     const { post_id, parent_id, content } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
     if (!post_id || !content) {
       return res.status(400).json({ error: 'Post ID and content are required' });
@@ -82,6 +86,10 @@ router.post('/', authenticateToken, (req, res) => {
 router.put('/:id', authenticateToken, (req, res) => {
   try {
     const { content } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
     const comment = db.prepare('SELECT * FROM comments WHERE id = ?').get(req.params.id);
 
@@ -120,6 +128,10 @@ router.put('/:id', authenticateToken, (req, res) => {
 // Delete comment (author or admin)
 router.delete('/:id', authenticateToken, (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const comment = db.prepare('SELECT * FROM comments WHERE id = ?').get(req.params.id);
 
     if (!comment) {

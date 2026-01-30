@@ -2,8 +2,27 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './PostCard.css';
 
-const PostCard = ({ post }) => {
-  const formatDate = (dateString) => {
+interface PostCardData {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  is_translated: number;
+  category_name: string;
+  author_name: string;
+  author_avatar: string | null;
+  latest_version: string | null;
+  updated_at: string;
+  comment_count: number;
+}
+
+interface PostCardProps {
+  post: PostCardData;
+}
+
+const PostCard: React.FC<PostCardProps> = ({ post }) => {
+  const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',

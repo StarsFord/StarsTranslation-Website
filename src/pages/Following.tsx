@@ -17,7 +17,7 @@ interface Post {
   latest_version: string;
 }
 
-const Following = () => {
+const Following: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);

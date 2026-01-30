@@ -1,8 +1,8 @@
-import { User as DbUser } from './database';
+import { JWTPayload } from '../middleware/auth.js';
 
-declare global {
-  namespace Express {
-    interface User extends DbUser {}
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: JWTPayload | null;
   }
 }
 

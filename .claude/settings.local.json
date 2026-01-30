@@ -3,7 +3,8 @@
     "allow": [
       "Bash(tsx scripts/add-external-links-column.ts:*)",
       "Bash(pnpm tsx:*)",
-      "Bash(timeout 5 pnpm run server:*)"
+      "Bash(timeout 5 pnpm run server:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []

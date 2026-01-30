@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
-const Login = () => {
+const Login: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated()) {

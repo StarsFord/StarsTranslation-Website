@@ -41,6 +41,8 @@ interface PreparedStatement {
   run: (...params: any[]) => { changes: number; lastInsertRowid: number };
   get: (...params: any[]) => any;
   all: (...params: any[]) => any[];
+  free: () => void;
+
 }
 
 // Wrapper object that matches better-sqlite3 API
@@ -116,23 +118,24 @@ const db: Database = {
           console.error('SQL Error:', err.message, 'Query:', sql);
           return [];
         }
+      },
+      free: (): void => {
+        // No explicit free needed in sql.js for prepared statements
       }
     };
+  },
+  exec: (sql: string): void => {
+    try {
+      sqlDb.exec(sql);
+      saveDatabase();
+    } catch (err: any) {
+      console.error('SQL Error:', err.message);
+      throw err;
+    }
   },
   close: (): void => {
     saveDatabase();
     sqlDb.close();
-  }
-};
-
-// Add additional methods for compatibility
-(db as any).exec = (sql: string): void => {
-  try {
-    sqlDb.exec(sql);
-    saveDatabase();
-  } catch (err: any) {
-    console.error('SQL Error:', err.message);
-    throw err;
   }
 };
 

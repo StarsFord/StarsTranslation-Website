@@ -1,11 +1,33 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import api from '../utils/api';
 
-const AuthContext = createContext(null);
+interface User {
+  id: number;
+  username: string;
+  email: string | null;
+  avatar_url: string | null;
+  role: 'admin' | 'translator' | 'user';
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (token: string) => void;
+  logout: () => void;
+  isAdmin: () => boolean;
+  isTranslator: () => boolean;
+  isAuthenticated: () => boolean;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     checkAuth();
@@ -29,19 +51,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = (token) => {
+  const login = (token: string): void => {
     localStorage.setItem('token', token);
     checkAuth();
   };
 
-  const logout = () => {
+  const logout = (): void => {
     localStorage.removeItem('token');
     setUser(null);
   };
 
-  const isAdmin = () => user?.role === 'admin';
-  const isTranslator = () => user?.role === 'translator' || user?.role === 'admin';
-  const isAuthenticated = () => !!user;
+  const isAdmin = (): boolean => user?.role === 'admin';
+  const isTranslator = (): boolean => user?.role === 'translator' || user?.role === 'admin';
+  const isAuthenticated = (): boolean => !!user;
 
   return (
     <AuthContext.Provider
@@ -60,7 +82,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within AuthProvider');

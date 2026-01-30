@@ -21,7 +21,7 @@ interface Tag {
   type_slug: string;
 }
 
-const TagsManagement = () => {
+const TagsManagement: React.FC = () => {
   const { isAdmin } = useAuth();
   const [tagTypes, setTagTypes] = useState<TagType[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);

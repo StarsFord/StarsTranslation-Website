@@ -1,12 +1,16 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { db } from '../database/db.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Get user notifications
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const { unread_only } = req.query;
 
     let query = `
@@ -37,8 +41,12 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // Mark notification as read
-router.put('/:id/read', authenticateToken, (req, res) => {
+router.put('/:id/read', authenticateToken, (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const notification = db.prepare('SELECT * FROM notifications WHERE id = ? AND user_id = ?')
       .get(req.params.id, req.user.id);
 
@@ -58,6 +66,10 @@ router.put('/:id/read', authenticateToken, (req, res) => {
 // Mark all notifications as read
 router.put('/read-all', authenticateToken, (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     db.prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ?').run(req.user.id);
 
     res.json({ message: 'All notifications marked as read' });

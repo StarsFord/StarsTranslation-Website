@@ -1,21 +1,70 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './PostEditor.css';
-  import UploadProgress from "../components/UploadProgress";
+import UploadProgress from "../components/UploadProgress";
 
-const PostEditor = () => {
-  const { id } = useParams();
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface ExternalLink {
+  label: string;
+  url: string;
+}
+
+interface FormData {
+  title: string;
+  slug: string;
+  description: string;
+  content: string;
+  category_id: string;
+  is_translated: boolean;
+  thumbnail_url: string;
+}
+
+interface SelectedTags {
+  platforms: number[];
+  genres: number[];
+  fetishes: number[];
+}
+
+interface Files {
+  translated: File[];
+  original: File[];
+  images: File[];
+}
+
+interface VersionData {
+  version_number: string;
+  changelog: string;
+}
+
+interface UploadProgress {
+  current: number;
+  total: number;
+  fileName: string;
+  percentage: number;
+}
+
+const PostEditor: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const { isTranslator } = useAuth();
   const isEditing = !!id;
 
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     slug: '',
     description: '',
@@ -26,45 +75,48 @@ const PostEditor = () => {
   });
 
   // Tags state
-  const [platforms, setPlatforms] = useState([]);
-  const [genres, setGenres] = useState([]);
-  const [fetishes, setFetishes] = useState([]);
-  const [selectedTags, setSelectedTags] = useState({
+  const [platforms, setPlatforms] = useState<Tag[]>([]);
+  const [genres, setGenres] = useState<Tag[]>([]);
+  const [fetishes, setFetishes] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<SelectedTags>({
     platforms: [],
     genres: [],
     fetishes: []
   });
 
-  const [files, setFiles] = useState({
+  const [files, setFiles] = useState<Files>({
     translated: [],
     original: [],
     images: []
   });
 
-  const [versionData, setVersionData] = useState({
+  const [versionData, setVersionData] = useState<VersionData>({
     version_number: '',
     changelog: ''
   });
 
-  const [uploadProgress, setUploadProgress] = useState({
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({
     current: 0,
     total: 0,
     fileName: '',
     percentage: 0
   });
 
-  const [externalLinks, setExternalLinks] = useState([
+  const [externalLinks, setExternalLinks] = useState<ExternalLink[]>([
     { label: '', url: '' }
   ]);
-  const handleAddLink = () => {
+
+  const handleAddLink = (): void => {
     setExternalLinks([...externalLinks, { label: '', url: '' }]);
   };
-  const handleLinkChange = (index, field, value) => {
+
+  const handleLinkChange = (index: number, field: keyof ExternalLink, value: string): void => {
     const newLinks = [...externalLinks];
     newLinks[index][field] = value;
     setExternalLinks(newLinks);
   };
-  const handleRemoveLink = (index) => {
+
+  const handleRemoveLink = (index: number): void => {
     setExternalLinks(externalLinks.filter((_, i) => i !== index));
   };
 

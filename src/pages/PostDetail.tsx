@@ -5,14 +5,62 @@ import api from '../utils/api';
 import Comments from '../components/Comments';
 import './PostDetail.css';
 
-const PostDetail = () => {
-  const { slug } = useParams();
+interface Attachment {
+  id: number;
+  post_id: number;
+  version_id: number | null;
+  filename: string;
+  original_filename: string;
+  file_path: string;
+  file_size: number;
+  mime_type: string;
+  attachment_type: 'translated' | 'original' | 'image';
+  description: string | null;
+  created_at: string;
+}
+
+interface Tag {
+  id: number;
+  tag_type_id: number;
+  name: string;
+  slug: string;
+  type_name: string;
+  type_slug: string;
+}
+
+interface PostData {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  content: string | null;
+  thumbnail_url: string | null;
+  is_translated: number;
+  category_name: string;
+  author_name: string;
+  author_avatar: string | null;
+  updated_at: string;
+  isFollowing: boolean;
+  attachments?: Attachment[];
+  versions?: any[];
+  external_links?: string | null;
+}
+
+interface GroupedAttachments {
+  translated: Attachment[];
+  original: Attachment[];
+  images: Attachment[];
+  other: Attachment[];
+}
+
+const PostDetail: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
   const { isAuthenticated } = useAuth();
-  const [post, setPost] = useState(null);
-  const [tags, setTags] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [following, setFollowing] = useState(false);
+  const [post, setPost] = useState<PostData | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [following, setFollowing] = useState<boolean>(false);
 
   useEffect(() => {
     fetchPost();
@@ -55,11 +103,11 @@ const PostDetail = () => {
     }
   };
 
-  const handleDownload = async (attachmentId) => {
+  const handleDownload = (attachmentId: number): void => {
     window.open(`http://localhost:3000/api/upload/attachment/${attachmentId}`, '_blank');
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -67,14 +115,14 @@ const PostDetail = () => {
     });
   };
 
-  const formatFileSize = (bytes) => {
+  const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
     if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
     return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
   };
 
-  const groupAttachments = () => {
+  const groupAttachments = (): GroupedAttachments => {
     if (!post?.attachments) return { translated: [], original: [], images: [], other: [] };
 
     return post.attachments.reduce((acc, att) => {

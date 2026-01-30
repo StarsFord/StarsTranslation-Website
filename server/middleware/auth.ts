@@ -1,23 +1,14 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../database/db.js';
-import type { User } from '../types/database.js';
 
-interface JWTPayload {
+export interface JWTPayload {
   id: number;
   patreon_id: string;
   username: string;
   role: 'admin' | 'translator' | 'user';
   iat?: number;
   exp?: number;
-}
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JWTPayload | null;
-    }
-  }
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {

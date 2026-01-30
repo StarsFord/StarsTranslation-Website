@@ -28,7 +28,7 @@ interface PendingPost {
   status: string;
 }
 
-const UsersManagement = () => {
+const UsersManagement: React.FC = () => {
   const { isAdmin } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [pendingPosts, setPendingPosts] = useState<PendingPost[]>([]);
