@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { db } from '../database/db.js';
-import { authenticateToken, requireRole, optionalAuth, checkBan } from '../middleware/auth.js';
+import { authenticateToken, authenticateTokenFlexible, requireRole, optionalAuth, checkBan } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -358,6 +358,69 @@ router.post('/:id/follow', authenticateToken, checkBan, (req, res) => {
   } catch (error) {
     console.error('Error toggling follow:', error);
     res.status(500).json({ error: 'Failed to toggle follow' });
+  }
+});
+
+// Redirect external link (with tier verification)
+router.get('/:postId/external-link/:linkIndex', authenticateTokenFlexible, (req, res) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    const post: any = db.prepare('SELECT external_links FROM posts WHERE id = ?').get(req.params.postId);
+    
+    if (!post || !post.external_links) {
+      res.status(404).json({ error: 'Link not found' });
+      return;
+    }
+
+    let links;
+    try {
+      links = typeof post.external_links === 'string' ? JSON.parse(post.external_links) : post.external_links;
+    } catch (e) {
+      res.status(500).json({ error: 'Invalid link data' });
+      return;
+    }
+
+    const linkIndex = parseInt(String(req.params.linkIndex));
+    const link = links[linkIndex];
+
+    if (!link || !link.url) {
+      res.status(404).json({ error: 'Link not found' });
+      return;
+    }
+
+    // Verificar tier do usuário
+    const user = db.prepare('SELECT patreon_tier, role FROM users WHERE id = ?').get(req.user.id) as any;
+    
+    if (user && (user.role === 'admin' || (user.patreon_tier && user.patreon_tier !== 'free'))) {
+      // Usuário premium ou admin - redirect direto
+      console.log(`✅ Premium external link access (${user.patreon_tier}): ${link.label}`);
+      res.redirect(link.url);
+      return;
+    }
+
+    // Usuário free - usar link encurtado (se disponível)
+    console.log(`⚠️ Free user external link access: ${link.label}`);
+    
+    if (link.shortened_url) {
+      // Tem shortened URL configurado - redireciona direto
+      console.log(`🔗 Redirecting to shortened URL: ${link.shortened_url}`);
+      res.redirect(link.shortened_url);
+      return;
+    }
+    
+    // Sem shortened URL - retorna JSON para frontend decidir
+    res.json({
+      requiresShortener: true,
+      originalUrl: link.url,
+      message: 'Premium tier required for direct access. Shortened link not configured.'
+    });
+  } catch (error) {
+    console.error('Error redirecting external link:', error);
+    res.status(500).json({ error: 'Failed to redirect' });
   }
 });
 

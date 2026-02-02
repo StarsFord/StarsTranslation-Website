@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+alter TABLE users add COLUMN patreon_tier VARCHAR(100) DEFAULT 'free';
+
 -- Post categories
 CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

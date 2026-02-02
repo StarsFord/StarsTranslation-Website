@@ -165,8 +165,13 @@ router.delete('/attachment/:id', authenticateToken, checkBan, requireRole('admin
 });
 
 // Get attachment download URL
-router.get('/attachment/:id', (req: Request, res: Response) => {
+router.get('/attachment/:id', authenticateToken, async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
     const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
 
     if (!attachment) {
@@ -174,11 +179,144 @@ router.get('/attachment/:id', (req: Request, res: Response) => {
       return;
     }
 
-    // Since file_path is now a public URL, redirect to it
+    // Verificar tipo de attachment
+    if (attachment.attachment_type === 'translated' || attachment.attachment_type === 'original') {
+      // Admin sempre tem acesso direto
+      if (req.user.role === 'admin') {
+        console.log(`✅ Admin download: ${attachment.original_filename}`);
+        res.redirect(attachment.file_path);
+        return;
+      }
+
+      // Verificar tier pago do usuário
+      const user = db.prepare('SELECT patreon_tier FROM users WHERE id = ?').get(req.user.id) as any;
+      
+      if (user && user.patreon_tier && user.patreon_tier !== 'free') {
+        // Usuário tem tier pago - download direto
+        console.log(`✅ Premium download (${user.patreon_tier}): ${attachment.original_filename}`);
+        res.redirect(attachment.file_path);
+        return;
+      }
+
+      // Usuário free - requer AdSense
+      console.log(`⚠️ Free user download attempt: ${attachment.original_filename}`);
+      res.status(403).json({
+        requiresAdsense: true,
+        downloadUrl: attachment.file_path,
+        attachmentId: attachment.id,
+        fileName: attachment.original_filename,
+        message: 'Premium tier required for direct download. Please watch an ad or upgrade your Patreon tier.'
+      });
+      return;
+    }
+
+    // Imagens são sempre públicas
     res.redirect(attachment.file_path);
   } catch (error) {
     console.error('Error downloading attachment:', error);
     res.status(500).json({ error: 'Failed to download attachment' });
+  }
+});
+
+// Get attachment info for AdSense page (without download)
+router.get('/adsense-info/:id', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
+
+    if (!attachment) {
+      res.status(404).json({ error: 'Attachment not found' });
+      return;
+    }
+
+    // Retornar apenas informações do arquivo, sem URL de download
+    res.json({
+      id: attachment.id,
+      fileName: attachment.original_filename,
+      fileSize: attachment.file_size,
+      mimeType: attachment.mime_type,
+      attachmentType: attachment.attachment_type
+    });
+  } catch (error) {
+    console.error('Error getting attachment info:', error);
+    res.status(500).json({ error: 'Failed to get attachment info' });
+  }
+});
+
+// Generate temporary download token
+router.post('/generate-download-token/:id', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
+
+    if (!attachment) {
+      res.status(404).json({ error: 'Attachment not found' });
+      return;
+    }
+
+    // Gerar token temporário (válido por 5 minutos)
+    const token = Buffer.from(
+      `${attachment.id}-${req.user.id}-${Date.now() + 5 * 60 * 1000}`
+    ).toString('base64');
+
+    console.log(`✅ Generated download token for ${attachment.original_filename}`);
+    
+    res.json({ token });
+  } catch (error) {
+    console.error('Error generating download token:', error);
+    res.status(500).json({ error: 'Failed to generate download token' });
+  }
+});
+
+// Download with temporary token
+router.get('/download-with-token/:id', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.query;
+
+    if (!token || typeof token !== 'string') {
+      res.status(400).json({ error: 'Token required' });
+      return;
+    }
+
+    // Decodificar e validar token
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      const [attachmentId, userId, expiryTime] = decoded.split('-');
+
+      if (parseInt(attachmentId) !== parseInt(String(req.params.id))) {
+        res.status(403).json({ error: 'Invalid token for this file' });
+        return;
+      }
+
+      if (Date.now() > parseInt(expiryTime)) {
+        res.status(403).json({ error: 'Token expired. Please generate a new one.' });
+        return;
+      }
+
+      const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
+
+      if (!attachment) {
+        res.status(404).json({ error: 'Attachment not found' });
+        return;
+      }
+
+      console.log(`✅ Token download: ${attachment.original_filename} by user ${userId}`);
+      res.redirect(attachment.file_path);
+    } catch (error) {
+      console.error('Invalid token format:', error);
+      res.status(403).json({ error: 'Invalid token' });
+    }
+  } catch (error) {
+    console.error('Error downloading with token:', error);
+    res.status(500).json({ error: 'Failed to download file' });
   }
 });
 

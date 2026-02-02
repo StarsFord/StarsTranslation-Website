@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
-import { PostData, Tag, GroupedAttachments } from '../types/post';
+import { PostData, Tag, GroupedAttachments, ExternalLink } from '../types/post';
 import Comments from '../components/Comments';
 import './PostDetail.css';
 
 const PostDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [post, setPost] = useState<PostData | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,8 +61,48 @@ const PostDetail: React.FC = () => {
     }
   };
 
-  const handleDownload = (attachmentId: number): void => {
-    window.open(`http://localhost:3000/api/upload/attachment/${attachmentId}`, '_blank');
+  const handleDownload = async (attachmentId: number): Promise<void> => {
+    if (!isAuthenticated()) {
+      alert('Please login to download files');
+      return;
+    }
+
+    try {
+      const response = await api.get(`/api/upload/attachment/${attachmentId}`);
+      
+      // Se requer AdSense, redireciona para a página
+      if (response.data.requiresAdsense) {
+        navigate(`/adsense/${attachmentId}`);
+      } else {
+        // Download direto (usuário premium ou admin)
+        window.open(`http://localhost:3000/api/upload/attachment/${attachmentId}`, '_blank');
+      }
+    } catch (error: any) {
+      if (error.response?.data?.requiresAdsense) {
+        // Redireciona para página de AdSense
+        navigate(`/adsense/${attachmentId}`);
+      } else {
+        alert('Failed to download file');
+      }
+    }
+  };
+
+  const handleExternalLink = async (linkIndex: number, link: ExternalLink): Promise<void> => {
+    if (!isAuthenticated()) {
+      alert('Please login to access download links');
+      return;
+    }
+
+    // Obter token do localStorage para passar na URL
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Authentication required. Please login again.');
+      navigate('/login');
+      return;
+    }
+
+    // Navegar diretamente para a URL da API com token - o backend fará o redirect baseado no tier
+    window.open(`/api/posts/${post?.id}/external-link/${linkIndex}?token=${token}`, '_blank');
   };
 
   const formatDate = (dateString: string): string => {
@@ -307,19 +348,23 @@ const PostDetail: React.FC = () => {
         {post.external_links && post.external_links.length > 0 && (
           <div className="post-section external-links-section">
             <h2>Alternative Download Links</h2>
+            <p className="section-hint">
+              🌟 Premium Patreon supporters get direct access. Free users will be redirected through monetized short links.
+            </p>
             <div className="external-links-list">
               {post.external_links.map((link, index) => (
-                <a
+                <button
                   key={index}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  onClick={() => handleExternalLink(index, link)}
                   className="external-link-button"
                 >
                   <span className="link-icon">🔗</span>
-                  <span className="link-label">{link.label}</span>
+                  <span className="link-label">
+                    {link.label}
+                    {link.shortened_url && <span className="link-badge">Free</span>}
+                  </span>
                   <span className="link-arrow">→</span>
-                </a>
+                </button>
               ))}
             </div>
           </div>

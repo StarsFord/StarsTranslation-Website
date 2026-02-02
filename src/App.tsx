@@ -12,6 +12,7 @@ import Search from './pages/Search';
 import TagsManagement from './pages/TagsManagement';
 import UsersManagement from './pages/UsersManagement';
 import Following from './pages/Following';
+import AdSense from './pages/AdSense';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/admin/post/edit/:id" element={<PostEditor />} />
           <Route path="/admin/tags" element={<TagsManagement />} />
           <Route path="/admin/users" element={<UsersManagement />} />
+          <Route path="/adsense/:attachmentId" element={<AdSense />} />
         </Routes>
       </main>
       <Footer />

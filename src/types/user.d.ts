@@ -4,6 +4,7 @@ export interface AuthUser {
   email: string | null;
   avatar_url: string | null;
   role: 'admin' | 'translator' | 'user';
+  patron_tier?: string;
 }
 
 export interface User {

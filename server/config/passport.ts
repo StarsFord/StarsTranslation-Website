@@ -42,7 +42,7 @@ const configurePatreon = (): boolean => {
           clientID: process.env.PATREON_CLIENT_ID,
           clientSecret: process.env.PATREON_CLIENT_SECRET,
           callbackURL: process.env.PATREON_CALLBACK_URL || 'http://localhost:3000/auth/patreon/callback',
-          scope: ['identity', 'identity[email]']
+          scope: ['identity', 'identity[email]', 'campaigns', 'campaigns.members', 'identity.memberships']
         },
         async (accessToken: string, refreshToken: string, profile: Profile, done: (error: any, user?: any) => void) => {
           try {

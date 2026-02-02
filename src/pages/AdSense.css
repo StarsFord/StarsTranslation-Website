@@ -1,0 +1,293 @@
+.adsense-page {
+  min-height: 100vh;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.adsense-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.adsense-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.adsense-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.file-icon {
+  font-size: 4rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.file-details h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.file-size {
+  margin: 0;
+  color: #718096;
+  font-size: 1rem;
+}
+
+.ad-container {
+  padding: 2rem;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7fafc;
+}
+
+.ad-placeholder {
+  width: 100%;
+  min-height: 250px;
+  background: white;
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.ad-countdown {
+  text-align: center;
+}
+
+.countdown-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.countdown-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.ad-countdown p {
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.ad-countdown small {
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+.ad-complete {
+  text-align: center;
+}
+
+.success-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto;
+  font-size: 4rem;
+  color: white;
+  box-shadow: 0 10px 30px rgba(72, 187, 120, 0.3);
+  animation: successPop 0.5s ease-out;
+}
+
+@keyframes successPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.ad-complete p {
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.ad-complete small {
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+.download-section {
+  padding: 2rem;
+  text-align: center;
+  border-top: 2px solid #f0f0f0;
+}
+
+.btn-large {
+  padding: 1.25rem 3rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  min-width: 250px;
+  margin-bottom: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  animation: readyPulse 2s ease-in-out infinite;
+}
+
+@keyframes readyPulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(72, 187, 120, 0.5);
+  }
+}
+
+.btn-disabled {
+  background: #cbd5e0;
+  color: #718096;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-disabled:hover {
+  background: #cbd5e0;
+  transform: none;
+}
+
+.download-icon,
+.lock-icon {
+  font-size: 1.5rem;
+}
+
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.premium-cta {
+  padding: 2rem;
+  background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.premium-cta p {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.premium-cta .btn {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+  color: white;
+  text-decoration: none;
+}
+
+.premium-cta .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(237, 137, 54, 0.3);
+}
+
+@media (max-width: 768px) {
+  .adsense-header {
+    padding: 2rem 1rem;
+  }
+
+  .adsense-header h1 {
+    font-size: 2rem;
+  }
+
+  .file-info {
+    padding: 1.5rem;
+  }
+
+  .ad-container {
+    padding: 1.5rem;
+  }
+
+  .countdown-circle,
+  .success-icon {
+    width: 100px;
+    height: 100px;
+  }
+
+  .countdown-number {
+    font-size: 2.5rem;
+  }
+
+  .btn-large {
+    min-width: 100%;
+    padding: 1rem 2rem;
+  }
+}

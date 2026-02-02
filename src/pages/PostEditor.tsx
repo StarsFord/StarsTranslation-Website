@@ -53,11 +53,11 @@ const PostEditor: React.FC = () => {
   });
 
   const [externalLinks, setExternalLinks] = useState<ExternalLink[]>([
-    { label: '', url: '' }
+    { label: '', url: '', shortened_url: '' }
   ]);
 
   const handleAddLink = (): void => {
-    setExternalLinks([...externalLinks, { label: '', url: '' }]);
+    setExternalLinks([...externalLinks, { label: '', url: '', shortened_url: '' }]);
   };
 
   const handleLinkChange = (index: number, field: keyof ExternalLink, value: string): void => {
@@ -510,7 +510,8 @@ const PostEditor: React.FC = () => {
             <h2>External Download Links</h2>
 
             <p className="section-description">
-              Add alternative download links (Pixeldrain, Gofile, etc.) as backup options
+              Add alternative download links (Pixeldrain, Gofile, etc.) as backup options.<br />
+              <strong>Shortened URLs:</strong> Free users will be redirected to shortened links (with ads) instead of direct links. Premium Patreon supporters get direct access.
             </p>
 
             {externalLinks.map((link, index) => (
@@ -528,15 +529,30 @@ const PostEditor: React.FC = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="label">URL</label>
+                  <label className="label">Direct URL (Premium Only)</label>
 
                   <input
                     type="url"
                     value={link.url}
                     onChange={(e) => handleLinkChange(index, "url", e.target.value)}
                     className="input"
-                    placeholder="https://..."
+                    placeholder="https://pixeldrain.com/..."
                   />
+                </div>
+
+                <div className="form-group">
+                  <label className="label">Shortened URL (Free Users) 🔗</label>
+
+                  <input
+                    type="url"
+                    value={link.shortened_url || ''}
+                    onChange={(e) => handleLinkChange(index, "shortened_url", e.target.value)}
+                    className="input"
+                    placeholder="https://adf.ly/... or https://linkvertise.com/..."
+                  />
+                  <small style={{ color: '#718096', fontSize: '0.85rem' }}>
+                    Optional: AdFly, Linkvertise, or similar monetization link for free users
+                  </small>
                 </div>
 
                 <button

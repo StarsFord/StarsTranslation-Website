@@ -31,6 +31,7 @@ export interface Category {
 export interface ExternalLink {
   label: string;
   url: string;
+  shortened_url?: string;
 }
 
 export interface PostFormData {
