@@ -1,12 +1,6 @@
 import React from 'react';
 import './UploadProgress.css';
-
-interface UploadProgressProps {
-  current: number;
-  total: number;
-  fileName: string;
-  percentage: number;
-}
+import { UploadProgressProps } from '../types/post';
 
 const UploadProgress: React.FC<UploadProgressProps> = ({ current, total, fileName, percentage }) => {
   if (total === 0) return null;

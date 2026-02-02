@@ -3,21 +3,7 @@ import { useParams } from 'react-router-dom';
 import api from '../utils/api';
 import PostCard from '../components/PostCard';
 import './Home.css';
-
-interface PostData {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnail_url: string | null;
-  is_translated: number;
-  category_name: string;
-  author_name: string;
-  author_avatar: string | null;
-  latest_version: string | null;
-  updated_at: string;
-  comment_count: number;
-}
+import { PostData } from '../types/post';
 
 const Home: React.FC = () => {
   const { category } = useParams<{ category?: string }>();

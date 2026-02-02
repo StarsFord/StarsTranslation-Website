@@ -2,27 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './Comments.css';
+import { CommentData, CommentFormProps, CommentProps, CommentsProps } from '../types/post';
 
-interface CommentData {
-  id: number;
-  post_id: number;
-  user_id: number;
-  parent_id: number | null;
-  content: string;
-  username: string;
-  avatar_url: string | null;
-  role: string;
-  created_at: string;
-  updated_at: string;
-  replies?: CommentData[];
-}
 
-interface CommentProps {
-  comment: CommentData;
-  onReply: () => void;
-  onEdit: (commentId: number, content: string) => Promise<void>;
-  onDelete: (commentId: number) => Promise<void>;
-}
 
 const Comment: React.FC<CommentProps> = ({ comment, onReply, onEdit, onDelete }) => {
   const { user, isAdmin } = useAuth();
@@ -130,12 +112,7 @@ const Comment: React.FC<CommentProps> = ({ comment, onReply, onEdit, onDelete })
   );
 };
 
-interface CommentFormProps {
-  postId: number;
-  parentId?: number | null;
-  onSubmit: () => void;
-  onCancel?: () => void;
-}
+
 
 const CommentForm: React.FC<CommentFormProps> = ({ postId, parentId, onSubmit, onCancel }) => {
   const [content, setContent] = useState<string>('');
@@ -169,7 +146,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ postId, parentId, onSubmit, o
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write a comment..."
         className="input"
-        rows="3"
+        rows={3}
         disabled={submitting}
       />
       <div className="comment-form-actions">
@@ -185,11 +162,6 @@ const CommentForm: React.FC<CommentFormProps> = ({ postId, parentId, onSubmit, o
     </form>
   );
 };
-
-interface CommentsProps {
-  postId: number;
-}
-
 const Comments: React.FC<CommentsProps> = ({ postId }) => {
   const { isAuthenticated } = useAuth();
   const [comments, setComments] = useState<CommentData[]>([]);

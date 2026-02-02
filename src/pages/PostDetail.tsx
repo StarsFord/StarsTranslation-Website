@@ -2,56 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { PostData, Tag, GroupedAttachments } from '../types/post';
 import Comments from '../components/Comments';
 import './PostDetail.css';
-
-interface Attachment {
-  id: number;
-  post_id: number;
-  version_id: number | null;
-  filename: string;
-  original_filename: string;
-  file_path: string;
-  file_size: number;
-  mime_type: string;
-  attachment_type: 'translated' | 'original' | 'image';
-  description: string | null;
-  created_at: string;
-}
-
-interface Tag {
-  id: number;
-  tag_type_id: number;
-  name: string;
-  slug: string;
-  type_name: string;
-  type_slug: string;
-}
-
-interface PostData {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  content: string | null;
-  thumbnail_url: string | null;
-  is_translated: number;
-  category_name: string;
-  author_name: string;
-  author_avatar: string | null;
-  updated_at: string;
-  isFollowing: boolean;
-  attachments?: Attachment[];
-  versions?: any[];
-  external_links?: string | null;
-}
-
-interface GroupedAttachments {
-  translated: Attachment[];
-  original: Attachment[];
-  images: Attachment[];
-  other: Attachment[];
-}
 
 const PostDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -94,6 +47,10 @@ const PostDetail: React.FC = () => {
       return;
     }
 
+    if (!post) {
+      return;
+    }
+
     try {
       const response = await api.post(`/api/posts/${post.id}/follow`);
       setFollowing(response.data.following);
@@ -125,7 +82,7 @@ const PostDetail: React.FC = () => {
   const groupAttachments = (): GroupedAttachments => {
     if (!post?.attachments) return { translated: [], original: [], images: [], other: [] };
 
-    return post.attachments.reduce((acc, att) => {
+    return post.attachments.reduce<GroupedAttachments>((acc, att) => {
       if (att.attachment_type === 'translated') acc.translated.push(att);
       else if (att.attachment_type === 'original') acc.original.push(att);
       else if (att.attachment_type === 'image') acc.images.push(att);

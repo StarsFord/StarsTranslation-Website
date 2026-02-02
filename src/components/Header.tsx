@@ -59,7 +59,7 @@ const Header = () => {
           </nav>
 
           <div className="header-actions">
-            {isAuthenticated() ? (
+            {isAuthenticated() && user ? (
               <div className="user-menu">
                 <div className="user-info">
                   {user.avatar_url && (

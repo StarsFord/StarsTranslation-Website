@@ -35,7 +35,7 @@ router.put('/:id/role', authenticateToken, requireRole('admin'), (req: Request, 
     }
 
     // Prevent demoting yourself
-    if ((req as any).user.id === parseInt(userId)) {
+    if ((req as any).user.id === parseInt(String(userId))) {
       res.status(400).json({ error: 'Cannot change your own role' });
       return;
     }
@@ -62,12 +62,12 @@ router.post('/:id/ban', authenticateToken, requireRole('admin'), (req: Request, 
     const adminId = (req as any).user.id;
 
     // Prevent banning yourself
-    if (adminId === parseInt(userId)) {
+    if (adminId === parseInt(String(userId))) {
       res.status(400).json({ error: 'Cannot ban yourself' });
       return;
     }
 
-    let banExpiresAt = null;
+    let banExpiresAt: string | null = null;
     if (duration && duration > 0) {
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + duration);

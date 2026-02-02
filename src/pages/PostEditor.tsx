@@ -4,57 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './PostEditor.css';
 import UploadProgress from "../components/UploadProgress";
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-interface Tag {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-interface ExternalLink {
-  label: string;
-  url: string;
-}
-
-interface FormData {
-  title: string;
-  slug: string;
-  description: string;
-  content: string;
-  category_id: string;
-  is_translated: boolean;
-  thumbnail_url: string;
-}
-
-interface SelectedTags {
-  platforms: number[];
-  genres: number[];
-  fetishes: number[];
-}
-
-interface Files {
-  translated: File[];
-  original: File[];
-  images: File[];
-}
-
-interface VersionData {
-  version_number: string;
-  changelog: string;
-}
-
-interface UploadProgress {
-  current: number;
-  total: number;
-  fileName: string;
-  percentage: number;
-}
+import { Category, ExternalLink, Files, SelectedTags, Tag, VersionData, UploadProgress as UploadProgressType, PostFormData } from '../types/post';
 
 const PostEditor: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -64,7 +14,7 @@ const PostEditor: React.FC = () => {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<PostFormData>({
     title: '',
     slug: '',
     description: '',
@@ -95,7 +45,7 @@ const PostEditor: React.FC = () => {
     changelog: ''
   });
 
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({
+  const [uploadProgress, setUploadProgress] = useState<UploadProgressType>({
     current: 0,
     total: 0,
     fileName: '',
@@ -176,9 +126,9 @@ const PostEditor: React.FC = () => {
       const postTags = tagsResponse.data;
 
       setSelectedTags({
-        platforms: postTags.filter(t => t.type_slug === 'platform').map(t => t.id),
-        genres: postTags.filter(t => t.type_slug === 'genre').map(t => t.id),
-        fetishes: postTags.filter(t => t.type_slug === 'fetish').map(t => t.id)
+        platforms: postTags.filter((t: Tag) => t.type_slug === 'platform').map((t: Tag) => t.id),
+        genres: postTags.filter((t: Tag) => t.type_slug === 'genre').map((t: Tag) => t.id),
+        fetishes: postTags.filter((t: Tag) => t.type_slug === 'fetish').map((t: Tag) => t.id)
       });
     } catch (error) {
       console.error('Error fetching post:', error);
@@ -186,8 +136,9 @@ const PostEditor: React.FC = () => {
     }
   };
 
-  const handleChange = (e ) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>): void => {
+    const { name, value, type } = e.target;
+    const checked = 'checked' in e.target ? e.target.checked : false;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -203,14 +154,16 @@ const PostEditor: React.FC = () => {
     }
   };
 
-  const handleFileChange = (e, type) => {
-    setFiles(prev => ({
-      ...prev,
-      [type]: Array.from(e.target.files)
-    }));
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: keyof Files): void => {
+    if (e.target.files) {
+      setFiles(prev => ({
+        ...prev,
+        [type]: Array.from(e.target.files!)
+      }));
+    }
   };
 
-  const handleTagToggle = (tagType, tagId) => {
+  const handleTagToggle = (tagType: keyof SelectedTags, tagId: number): void => {
     setSelectedTags(prev => {
       const currentTags = prev[tagType];
       const isSelected = currentTags.includes(tagId);
@@ -224,7 +177,7 @@ const PostEditor: React.FC = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
 
@@ -252,7 +205,7 @@ const PostEditor: React.FC = () => {
     }
 
     // Upload files
-    const uploadFile = async (file, attachmentType, index, total) => {
+    const uploadFile = async (file: File, attachmentType: string, index: number, total: number): Promise<void> => {
     const formData = new FormData();
 
     formData.append("file", file);
@@ -275,19 +228,21 @@ const PostEditor: React.FC = () => {
       headers: { "Content-Type": "multipart/form-data" },
 
       onUploadProgress: (progressEvent) => {
-        const fileProgress = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
+        if (progressEvent.total) {
+          const fileProgress = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
 
-        const totalProgress = Math.round(
-          ((index + fileProgress / 100) / total) * 100
-        );
+          const totalProgress = Math.round(
+            ((index + fileProgress / 100) / total) * 100
+          );
 
-        setUploadProgress((prev) => ({
-          ...prev,
+          setUploadProgress((prev) => ({
+            ...prev,
 
-          percentage: totalProgress,
-        }));
+            percentage: totalProgress,
+          }));
+        }
       },
     });
   };
@@ -342,7 +297,7 @@ const PostEditor: React.FC = () => {
 
     alert(isEditing ? 'Post updated successfully!' : 'Post created successfully!');
       navigate('/admin');
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error saving post:', error);
     alert('Failed to save post: ' + (error.response?.data?.error || error.message));
   } finally {

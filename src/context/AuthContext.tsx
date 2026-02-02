@@ -1,23 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import api from '../utils/api';
-
-interface User {
-  id: number;
-  username: string;
-  email: string | null;
-  avatar_url: string | null;
-  role: 'admin' | 'translator' | 'user';
-}
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (token: string) => void;
-  logout: () => void;
-  isAdmin: () => boolean;
-  isTranslator: () => boolean;
-  isAuthenticated: () => boolean;
-}
+import { AuthContextType, AuthUser } from '../types/user';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -26,7 +9,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {

@@ -1,25 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './PostCard.css';
-
-interface PostCardData {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnail_url: string | null;
-  is_translated: number;
-  category_name: string;
-  author_name: string;
-  author_avatar: string | null;
-  latest_version: string | null;
-  updated_at: string;
-  comment_count: number;
-}
-
-interface PostCardProps {
-  post: PostCardData;
-}
+import { PostCardProps } from '../types/post';
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const formatDate = (dateString: string): string => {
@@ -68,7 +50,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               <span className="post-version">v{post.latest_version}</span>
             )}
             <span className="post-date">{formatDate(post.updated_at)}</span>
-            {post.comment_count > 0 && (
+            {post.comment_count! > 0 && (
               <span className="post-comments">{post.comment_count} comments</span>
             )}
           </div>

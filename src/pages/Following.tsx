@@ -3,23 +3,12 @@ import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './Following.css';
+import { PostCardData } from '../types/post';
 
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-  thumbnail_url: string;
-  category_name: string;
-  author_name: string;
-  is_translated: boolean;
-  updated_at: string;
-  latest_version: string;
-}
 
 const Following: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

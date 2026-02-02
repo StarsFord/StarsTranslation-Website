@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { PostCardData } from '../types/post';
 import './AdminDashboard.css';
+
 
 const AdminDashboard = () => {
   const { isTranslator, isAdmin } = useAuth();
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<PostCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDelete = async (postId) => {
+  const handleDelete = async (postId: number) => {
     if (!confirm('Are you sure you want to delete this post?')) return;
 
     try {
@@ -41,7 +43,7 @@ const AdminDashboard = () => {
     return <Navigate to="/" />;
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',

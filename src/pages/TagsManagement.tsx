@@ -3,23 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './TagsManagement.css';
-
-interface TagType {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-}
-
-interface Tag {
-  id: number;
-  tag_type_id: number;
-  name: string;
-  slug: string;
-  description: string;
-  type_name: string;
-  type_slug: string;
-}
+import { Tag, TagType } from '../types/post';
 
 const TagsManagement: React.FC = () => {
   const { isAdmin } = useAuth();

@@ -3,30 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import './UsersManagement.css';
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  avatar_url: string;
-  role: string;
-  is_banned: boolean;
-  ban_reason: string | null;
-  ban_expires_at: string | null;
-  created_at: string;
-}
-
-interface PendingPost {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-  category_name: string;
-  author_name: string;
-  author_avatar: string;
-  created_at: string;
-  status: string;
-}
+import { PendingPost } from '../types/post';
+import { User } from '../types/user';
 
 const UsersManagement: React.FC = () => {
   const { isAdmin } = useAuth();
