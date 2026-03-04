@@ -45,7 +45,7 @@ COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/tsconfig.node.json ./
 
 # Install tsx globally for running TypeScript
-RUN pnpm add -g tsx
+RUN npm install -g tsx
 
 # Create directory for SQLite database
 RUN mkdir -p /app/data

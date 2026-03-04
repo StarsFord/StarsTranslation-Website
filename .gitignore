@@ -6,3 +6,5 @@ uploads/*
 !uploads/.gitkeep
 .DS_Store
 *.log
+service-account-key.json
+env.yaml
