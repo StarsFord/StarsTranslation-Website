@@ -14,7 +14,7 @@ router.get('/patreon', passport.authenticate('patreon'));
 router.get(
   '/patreon/callback',
   passport.authenticate('patreon', {
-    failureRedirect: `${process.env.BACKEND_URL}/login?error=auth_failed`
+    failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`
   }),
   async (req: Request, res: Response) => {
     const user = req.user as User;
