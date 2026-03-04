@@ -1,0 +1,5 @@
+# .vercelignore
+server/
+node_modules/
+.env
+env.yaml
