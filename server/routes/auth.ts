@@ -14,7 +14,7 @@ router.get('/patreon', passport.authenticate('patreon'));
 router.get(
   '/patreon/callback',
   passport.authenticate('patreon', {
-    failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`
+    failureRedirect: `${process.env.BACKEND_URL}/login?error=auth_failed`
   }),
   async (req: Request, res: Response) => {
     const user = req.user as User;
@@ -73,7 +73,7 @@ router.get(
       { expiresIn: '7d' }
     );
 
-    res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+    res.redirect(`${process.env.PATREON_CALLBACK_URL}?token=${token}`);
   }
 );
 
