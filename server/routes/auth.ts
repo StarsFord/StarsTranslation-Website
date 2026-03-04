@@ -73,7 +73,7 @@ router.get(
       { expiresIn: '7d' }
     );
 
-    res.redirect(`${process.env.PATREON_CALLBACK_URL}?token=${token}`);
+    res.redirect(`${process.env.BACKEND_URL}/auth/callback?token=${token}`);
   }
 );
 
