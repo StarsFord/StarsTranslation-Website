@@ -10,8 +10,10 @@ const Login: React.FC = () => {
     return <Navigate to="/" />;
   }
 
+  const url = process.env.BACKEND_URL ? `${process.env.BACKEND_URL}/auth/patreon` : 'https://starstranslations-backend-805236256394.us-central1.run.app/auth/patreon';
+
   const handleLogin = () => {
-    window.location.href = 'http://localhost:3000/auth/patreon';
+    window.location.href = url;
   };
 
   return (

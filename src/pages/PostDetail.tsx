@@ -75,7 +75,8 @@ const PostDetail: React.FC = () => {
         navigate(`/adsense/${attachmentId}`);
       } else {
         // Download direto (usuário premium ou admin)
-        window.open(`http://localhost:3000/api/upload/attachment/${attachmentId}`, '_blank');
+        const backendUrl = process.env.BACKEND_URL || 'https://starstranslations-backend-805236256394.us-central1.run.app';
+        window.open(`${backendUrl}/api/upload/attachment/${attachmentId}`, '_blank');
       }
     } catch (error: any) {
       if (error.response?.data?.requiresAdsense) {
@@ -102,7 +103,8 @@ const PostDetail: React.FC = () => {
     }
 
     // Navegar diretamente para a URL da API com token - o backend fará o redirect baseado no tier
-    window.open(`/api/posts/${post?.id}/external-link/${linkIndex}?token=${token}`, '_blank');
+    const backendUrl = process.env.BACKEND_URL || 'https://starstranslations-backend-805236256394.us-central1.run.app';
+    window.open(`${backendUrl}/api/posts/${post?.id}/external-link/${linkIndex}?token=${token}`, '_blank');
   };
 
   const formatDate = (dateString: string): string => {
@@ -378,7 +380,7 @@ const PostDetail: React.FC = () => {
               {attachments.images.map((att) => (
                 <div key={att.id} className="image-item">
                   <img
-                    src={`http://localhost:3000${att.file_path.replace(/\\/g, '/').split('uploads')[1] ? '/uploads' + att.file_path.replace(/\\/g, '/').split('uploads')[1] : ''}`}
+                    src={`${process.env.BACKEND_URL || 'https://starstranslations-backend-805236256394.us-central1.run.app'}${att.file_path.replace(/\\/g, '/').split('uploads')[1] ? '/uploads' + att.file_path.replace(/\\/g, '/').split('uploads')[1] : ''}`}
                     alt={att.description || att.original_filename}
                   />
                 </div>
