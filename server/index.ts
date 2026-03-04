@@ -6,12 +6,19 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env from project root (one level up from server/)
-const envPath = path.join(__dirname, '../.env');
-dotenv.config({ path: envPath });
+// Load environment variables
+// In production (GCP Cloud Run), env.yaml is automatically loaded as environment variables
+// In development/local, load from .env file
+if (process.env.NODE_ENV !== 'production') {
+  const envPath = path.join(__dirname, '../.env');
+  dotenv.config({ path: envPath });
+  console.log('📄 [LOCAL] Loading .env from:', envPath);
+} else {
+  console.log('☁️ [PRODUCTION] Using environment variables from Cloud Run (env.yaml)');
+}
 
-// Debug: Show if .env was loaded
-console.log('📄 Loading .env from:', envPath);
+// Debug: Show if environment variables are configured
+console.log('🌍 Environment:', process.env.NODE_ENV || 'development');
 console.log('🔑 JWT_SECRET configured:', !!process.env.JWT_SECRET);
 console.log('🔑 SESSION_SECRET configured:', !!process.env.SESSION_SECRET);
 console.log('🔑 PATREON_CLIENT_ID configured:', !!process.env.PATREON_CLIENT_ID);
@@ -35,7 +42,7 @@ import tagsRoutes from './routes/tags.js';
 import usersRoutes from './routes/users.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Initialize database
 initDatabase();

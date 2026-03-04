@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "tsx index.ts",
+    "start": "node --loader tsx index.ts",
     "dev": "tsx watch index.ts",
     "setup-db": "tsx setup-db.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.18.0",
+    "@types/uuid": "^11.0.0",
     "axios": "^1.6.5",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
@@ -19,7 +20,8 @@
     "multer": "^2.0.2",
     "passport": "^0.7.0",
     "passport-patreon": "^1.0.1",
-    "sql.js": "^1.10.3"
+    "sql.js": "^1.10.3",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

@@ -7,12 +7,18 @@ import type { Database, DatabaseMethods } from '../types/database.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const dbPath = join(__dirname, '../../data/stars-translations.db');
+const dbPath = process.env.DATABASE_PATH || join(__dirname, '../../data/stars-translations.db');
 const dbDir = dirname(dbPath);
+
+console.log('📁 Database path:', dbPath);
 
 // Create data directory if it doesn't exist
 if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+  try {
+    fs.mkdirSync(dbDir, { recursive: true });
+  } catch (err) {
+    console.log('⚠️ Note: Could not create directory (expected if using Cloud Run volumes)');
+  }
 }
 
 // Initialize SQL.js synchronously using top-level await

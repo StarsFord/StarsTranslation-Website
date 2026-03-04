@@ -1,0 +1,24 @@
+FROM node:20-slim
+
+# Instalar dependências de sistema necessárias
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copiar arquivos de dependências
+COPY package*.json ./
+
+# Instalar dependências (incluindo o tsx)
+RUN npm install
+
+# Copiar o resto do código
+COPY . .
+
+# Garantir permissão de execução na pasta (resolve o Permission Denied)
+RUN chmod -R 755 /app
+
+# Expor a porta que o Cloud Run usa
+EXPOSE 8080
+
+# Comando para iniciar
+CMD ["npm", "start"]
