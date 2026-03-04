@@ -13,27 +13,27 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://starstranslations-backend-805236256394.us-central1.run.app',
         changeOrigin: true
       },
       '/auth/patreon': {
-        target: 'http://localhost:3000',
+        target: 'https://starstranslations-backend-805236256394.us-central1.run.app',
         changeOrigin: true
       },
       '/auth/me': {
-        target: 'http://localhost:3000',
+        target: 'https://starstranslations-backend-805236256394.us-central1.run.app',
         changeOrigin: true
       },
       '/auth/logout': {
-        target: 'http://localhost:3000',
+        target: 'https://starstranslations-backend-805236256394.us-central1.run.app',
         changeOrigin: true
       },
       '/auth/dev-login': {
-        target: 'http://localhost:3000',
+        target: 'https://starstranslations-backend-805236256394.us-central1.run.app',
         changeOrigin: true
       },
       '/uploads': {
-        target: 'http://localhost:3000',
+        target: 'https://starstranslations-backend-805236256394.us-central1.run.app',
         changeOrigin: true
       }
     }

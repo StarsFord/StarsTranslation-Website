@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node --loader tsx index.ts",
+    "start": "node --import tsx index.ts",
     "dev": "tsx watch index.ts",
     "setup-db": "tsx setup-db.ts"
   },
