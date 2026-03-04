@@ -9,8 +9,10 @@ const Header = () => {
   const [homepageDropdownOpen, setHomepageDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
+  const url = process.env.BACKEND_URL ? `${process.env.BACKEND_URL}/auth/patreon` : 'http://localhost:3000/auth/patreon';
+
   const handleLogin = () => {
-    window.location.href = 'http://localhost:3000/auth/patreon';
+    window.location.href = url;
   };
 
   const handleLogout = () => {
