@@ -44,8 +44,8 @@ import usersRoutes from './routes/users.js';
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Initialize database
-initDatabase();
+// Initialize database (async)
+await initDatabase();
 
 // Middleware
 app.use(cors({

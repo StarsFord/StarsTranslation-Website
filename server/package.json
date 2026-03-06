@@ -20,8 +20,10 @@
     "multer": "^2.0.2",
     "passport": "^0.7.0",
     "passport-patreon": "^1.0.1",
+    "pg": "^8.11.3",
     "sql.js": "^1.10.3",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -30,6 +32,7 @@
     "@types/multer": "^2.0.0",
     "@types/node": "^24.10.1",
     "@types/passport": "^1.0.17",
+    "@types/pg": "^8.10.9",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }

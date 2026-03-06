@@ -31,10 +31,12 @@
     "multer": "^2.0.2",
     "passport": "^0.7.0",
     "passport-patreon": "^1.0.1",
+    "pg": "^8.20.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1",
-    "sql.js": "^1.10.3"
+    "sql.js": "^1.10.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

@@ -146,8 +146,17 @@ export interface DatabaseMethods {
   exec(sql: string): void;
 }
 
-export interface Database extends DatabaseMethods {
-  close(): void;
+export interface PreparedStatement {
+  run: (...params: any[]) => Promise<{ changes: number; lastInsertRowid: number }>;
+  get: (...params: any[]) => Promise<any>;
+  all: (...params: any[]) => Promise<any[]>;
+  free: () => void;
+}
+
+export interface Database {
+  prepare: (sql: string) => PreparedStatement;
+  exec: (sql: string) => Promise<void>;
+  close: () => Promise<void>;
 }
 
 // API Request/Response types
