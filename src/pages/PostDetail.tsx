@@ -196,6 +196,8 @@ const PostDetail: React.FC = () => {
           </div>
         </div>
 
+
+        { /* Description */ }
         {post.description && (
           <div className="post-description">
             <h2>Description</h2>
@@ -262,6 +264,7 @@ const PostDetail: React.FC = () => {
           </div>
         )}
 
+        {/* Main Content */}
         {post.content && (
           <div className="post-content">
             <div dangerouslySetInnerHTML={{ __html: post.content }} />
@@ -377,14 +380,21 @@ const PostDetail: React.FC = () => {
           <div className="post-section">
             <h2>Screenshots</h2>
             <div className="images-grid">
-              {attachments.images.map((att) => (
-                <div key={att.id} className="image-item">
-                  <img
-                    src={`${process.env.BACKEND_URL || 'https://starstranslations-backend-805236256394.us-central1.run.app'}${att.file_path.replace(/\\/g, '/').split('uploads')[1] ? '/uploads' + att.file_path.replace(/\\/g, '/').split('uploads')[1] : ''}`}
-                    alt={att.description || att.original_filename}
-                  />
-                </div>
-              ))}
+              {attachments.images.map((att) => {
+                // Se já é uma URL completa (GCS), usar diretamente
+                const imageUrl = att.file_path.startsWith('http') 
+                  ? att.file_path 
+                  : `${process.env.BACKEND_URL || 'https://starstranslations-backend-805236256394.us-central1.run.app'}${att.file_path}`;
+                
+                return (
+                  <div key={att.id} className="image-item">
+                    <img
+                      src={imageUrl}
+                      alt={att.description || att.original_filename}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

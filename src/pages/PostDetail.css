@@ -74,11 +74,13 @@
   color: var(--text-secondary);
   line-height: 1.8;
   font-size: 1.1rem;
+  white-space: pre-wrap;
 }
 
 .post-content {
   color: var(--text-secondary);
   line-height: 1.8;
+  white-space: pre-wrap;
 }
 
 .versions-list {
