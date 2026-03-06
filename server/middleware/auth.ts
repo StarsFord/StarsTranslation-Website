@@ -25,18 +25,15 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
       res.status(403).json({ error: 'Invalid or expired token' });
       return;
     }
-
     req.user = decoded as JWTPayload;
     next();
   });
 };
 
-// Middleware que aceita token via header OU query parameter (para redirects)
 export const authenticateTokenFlexible = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers['authorization'];
   const headerToken = authHeader && authHeader.split(' ')[1];
   const queryToken = req.query.token as string | undefined;
-  
   const token = headerToken || queryToken;
 
   if (!token) {
@@ -49,7 +46,6 @@ export const authenticateTokenFlexible = (req: Request, res: Response, next: Nex
       res.status(403).json({ error: 'Invalid or expired token' });
       return;
     }
-
     req.user = decoded as JWTPayload;
     next();
   });
@@ -61,12 +57,10 @@ export const requireRole = (...roles: Array<'admin' | 'translator' | 'user'>) =>
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
-
     if (!roles.includes(req.user.role)) {
       res.status(403).json({ error: 'Insufficient permissions' });
       return;
     }
-
     next();
   };
 };
@@ -91,18 +85,16 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction): v
   });
 };
 
-// Check if user is banned
-export const checkBan = (req: Request, res: Response, next: NextFunction): void => {
+export const checkBan = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   if (!req.user) {
     next();
     return;
   }
 
   try {
-    const user = db.prepare(`
+    const user = await db.prepare(`
       SELECT is_banned, ban_reason, ban_expires_at
-      FROM users
-      WHERE id = ?
+      FROM users WHERE id = ?
     `).get(req.user.id) as any;
 
     if (!user) {
@@ -110,27 +102,20 @@ export const checkBan = (req: Request, res: Response, next: NextFunction): void 
       return;
     }
 
-    // Check if user is banned
     if (user.is_banned) {
-      // Check if ban has expired
       if (user.ban_expires_at) {
         const expiryDate = new Date(user.ban_expires_at);
-        const now = new Date();
-
-        if (now > expiryDate) {
-          // Ban expired, unban the user
-          db.prepare(`
+        if (new Date() > expiryDate) {
+          await db.prepare(`
             UPDATE users
-            SET is_banned = 0, ban_reason = NULL, ban_expires_at = NULL, banned_at = NULL, banned_by = NULL
+            SET is_banned = false, ban_reason = NULL, ban_expires_at = NULL, banned_at = NULL, banned_by = NULL
             WHERE id = ?
           `).run(req.user.id);
-
           next();
           return;
         }
       }
 
-      // User is still banned
       res.status(403).json({
         error: 'Your account has been banned',
         reason: user.ban_reason,
@@ -146,25 +131,22 @@ export const checkBan = (req: Request, res: Response, next: NextFunction): void 
   }
 };
 
-// Check if user has paid tier (for premium downloads)
-export const requirePaidTier = (req: Request, res: Response, next: NextFunction): void => {
+export const requirePaidTier = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ error: 'Authentication required' });
     return;
   }
 
-  // Admin always has access
   if (req.user.role === 'admin') {
     next();
     return;
   }
 
   try {
-    // Buscar tier do usuário no banco
-    const user = db.prepare('SELECT patreon_tier FROM users WHERE id = ?').get(req.user.id) as any;
-    
+    const user = await db.prepare('SELECT patreon_tier FROM users WHERE id = ?').get(req.user.id) as any;
+
     if (!user || user.patreon_tier === 'free' || !user.patreon_tier) {
-      res.status(403).json({ 
+      res.status(403).json({
         error: 'Premium Patreon tier required for direct downloads',
         requiresAdsense: true,
         message: 'Please upgrade your Patreon tier or watch an ad to download'
@@ -172,7 +154,6 @@ export const requirePaidTier = (req: Request, res: Response, next: NextFunction)
       return;
     }
 
-    // Usuário tem tier pago
     next();
   } catch (error) {
     console.error('Error checking paid tier:', error);
