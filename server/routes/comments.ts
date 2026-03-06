@@ -5,9 +5,9 @@ import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get comments for a post
-router.get('/post/:postId', optionalAuth, (req: Request, res: Response) => {
+router.get('/post/:postId', optionalAuth, async (req: Request, res: Response) => {
   try {
-    const comments = db.prepare(`
+    const comments = await db.prepare(`
       SELECT
         c.*,
         u.username,
@@ -45,7 +45,7 @@ router.get('/post/:postId', optionalAuth, (req: Request, res: Response) => {
 });
 
 // Create comment (authenticated users only)
-router.post('/', authenticateToken, (req: Request, res: Response) => {
+router.post('/', authenticateToken, async (req: Request, res: Response) => {
   try {
     const { post_id, parent_id, content } = req.body;
 
@@ -57,14 +57,14 @@ router.post('/', authenticateToken, (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Post ID and content are required' });
     }
 
-    const stmt = db.prepare(`
+    const stmt = await db.prepare(`
       INSERT INTO comments (post_id, user_id, parent_id, content)
       VALUES (?, ?, ?, ?)
     `);
 
-    const result = stmt.run(post_id, req.user.id, parent_id || null, content);
+    const result = await stmt.run(post_id, req.user.id, parent_id || null, content);
 
-    const comment = db.prepare(`
+    const comment = await db.prepare(`
       SELECT
         c.*,
         u.username,
@@ -126,13 +126,13 @@ router.put('/:id', authenticateToken, (req, res) => {
 });
 
 // Delete comment (author or admin)
-router.delete('/:id', authenticateToken, (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const comment = db.prepare('SELECT * FROM comments WHERE id = ?').get(req.params.id);
+    const comment = await db.prepare('SELECT * FROM comments WHERE id = ?').get(req.params.id);
 
     if (!comment) {
       return res.status(404).json({ error: 'Comment not found' });
@@ -142,7 +142,7 @@ router.delete('/:id', authenticateToken, (req, res) => {
       return res.status(403).json({ error: 'Not authorized to delete this comment' });
     }
 
-    db.prepare('DELETE FROM comments WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM comments WHERE id = ?').run(req.params.id);
 
     res.json({ message: 'Comment deleted successfully' });
   } catch (error) {

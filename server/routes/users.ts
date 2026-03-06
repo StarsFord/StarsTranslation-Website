@@ -5,9 +5,9 @@ import { authenticateToken, requireRole } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get all users (admin only)
-router.get('/', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.get('/', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
-    const users = db.prepare(`
+    const users = await db.prepare(`
       SELECT
         id, patreon_id, username, email, avatar_url, role,
         is_banned, ban_reason, ban_expires_at, banned_at,
@@ -24,7 +24,7 @@ router.get('/', authenticateToken, requireRole('admin'), (req: Request, res: Res
 });
 
 // Update user role (admin only)
-router.put('/:id/role', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.put('/:id/role', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const { role } = req.body;
     const userId = req.params.id;
@@ -40,13 +40,13 @@ router.put('/:id/role', authenticateToken, requireRole('admin'), (req: Request, 
       return;
     }
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE users
       SET role = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(role, userId);
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
     res.json(user);
   } catch (error) {
     console.error('Error updating user role:', error);
@@ -55,7 +55,7 @@ router.put('/:id/role', authenticateToken, requireRole('admin'), (req: Request, 
 });
 
 // Ban user (admin only)
-router.post('/:id/ban', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.post('/:id/ban', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const { reason, duration } = req.body; // duration in days, null for permanent
     const userId = req.params.id;
@@ -74,7 +74,7 @@ router.post('/:id/ban', authenticateToken, requireRole('admin'), (req: Request, 
       banExpiresAt = expiryDate.toISOString();
     }
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE users
       SET
         is_banned = 1,
@@ -86,7 +86,7 @@ router.post('/:id/ban', authenticateToken, requireRole('admin'), (req: Request, 
       WHERE id = ?
     `).run(reason || 'No reason provided', banExpiresAt, adminId, userId);
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
     res.json(user);
   } catch (error) {
     console.error('Error banning user:', error);
@@ -95,11 +95,11 @@ router.post('/:id/ban', authenticateToken, requireRole('admin'), (req: Request, 
 });
 
 // Unban user (admin only)
-router.post('/:id/unban', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.post('/:id/unban', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE users
       SET
         is_banned = 0,
@@ -111,7 +111,7 @@ router.post('/:id/unban', authenticateToken, requireRole('admin'), (req: Request
       WHERE id = ?
     `).run(userId);
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
     res.json(user);
   } catch (error) {
     console.error('Error unbanning user:', error);
@@ -120,9 +120,9 @@ router.post('/:id/unban', authenticateToken, requireRole('admin'), (req: Request
 });
 
 // Get pending posts (admin only)
-router.get('/pending-posts', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.get('/pending-posts', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
-    const posts = db.prepare(`
+    const posts = await db.prepare(`
       SELECT p.*, c.name as category_name, c.slug as category_slug,
       u.username as author_name, u.avatar_url as author_avatar
       FROM posts p
@@ -140,12 +140,12 @@ router.get('/pending-posts', authenticateToken, requireRole('admin'), (req: Requ
 });
 
 // Approve post (admin only)
-router.post('/posts/:id/approve', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.post('/posts/:id/approve', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const postId = req.params.id;
     const adminId = (req as any).user.id;
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE posts
       SET
         status = 'published',
@@ -155,7 +155,7 @@ router.post('/posts/:id/approve', authenticateToken, requireRole('admin'), (req:
       WHERE id = ?
     `).run(adminId, postId);
 
-    const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
+    const post = await db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
     res.json(post);
   } catch (error) {
     console.error('Error approving post:', error);
@@ -164,13 +164,13 @@ router.post('/posts/:id/approve', authenticateToken, requireRole('admin'), (req:
 });
 
 // Reject post (admin only)
-router.post('/posts/:id/reject', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.post('/posts/:id/reject', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const postId = req.params.id;
     const adminId = (req as any).user.id;
     const { reason } = req.body;
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE posts
       SET
         status = 'rejected',
@@ -183,7 +183,7 @@ router.post('/posts/:id/reject', authenticateToken, requireRole('admin'), (req: 
     // Could send notification to author with rejection reason
     // For now, just update the post status
 
-    const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
+    const post = await db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
     res.json(post);
   } catch (error) {
     console.error('Error rejecting post:', error);

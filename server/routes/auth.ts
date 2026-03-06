@@ -78,14 +78,14 @@ router.get(
 );
 
 // Get current user
-router.get('/me', authenticateToken, (req: Request, res: Response) => {
+router.get('/me', authenticateToken, async (req: Request, res: Response) => {
   if (!req.user?.id) {
     res.status(401).json({ error: 'Not authenticated' });
     return;
   }
 
   // Fetch full user data from database
-  const user = db.prepare('SELECT id, username, email, avatar_url, role, patreon_tier FROM users WHERE id = ?').get(req.user.id) as any;
+  const user = await db.prepare('SELECT id, username, email, avatar_url, role, patreon_tier FROM users WHERE id = ?').get(req.user.id) as any;
 
   if (!user) {
     res.status(404).json({ error: 'User not found' });
@@ -109,7 +109,7 @@ router.post('/logout', authenticateToken, (req: Request, res: Response) => {
 
 // Development login (only works if Patreon OAuth is not configured)
 if (!process.env.PATREON_CLIENT_ID || !process.env.PATREON_CLIENT_SECRET) {
-  router.post('/dev-login', (req: Request, res: Response) => {
+  router.post('/dev-login', async (req: Request, res: Response) => {
     try {
       const { username } = req.body;
 
@@ -118,15 +118,15 @@ if (!process.env.PATREON_CLIENT_ID || !process.env.PATREON_CLIENT_SECRET) {
         return;
       }
 
-      let user = db.prepare('SELECT * FROM users WHERE username = ?').get(username) as User | null;
+      let user = await db.prepare('SELECT * FROM users WHERE username = ?').get(username) as User | null;
 
       if (!user) {
-        const stmt = db.prepare(`
+        const stmt = await db.prepare(`
           INSERT INTO users (patreon_id, username, email, role)
           VALUES (?, ?, ?, 'admin')
         `);
-        const result = stmt.run(`dev-${Date.now()}`, username, `${username}@dev.local`);
-        user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid) as User;
+        const result = await stmt.run(`dev-${Date.now()}`, username, `${username}@dev.local`);
+        user = await db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid) as User;
       }
 
       const token = jwt.sign(

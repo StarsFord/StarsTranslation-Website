@@ -41,12 +41,12 @@ router.post('/attachment', authenticateToken, checkBan, requireRole('admin', 'tr
     const uploadResult = await uploadToCloudStorage(req.file, folder);
 
     // Save to database
-    const stmt = db.prepare(`
+    const stmt = await db.prepare(`
       INSERT INTO attachments (post_id, version_id, filename, original_filename, file_path, file_size, mime_type, attachment_type, description)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(
+    const result = await stmt.run(
       post_id,
       version_id || null,
       uploadResult.filename,
@@ -58,7 +58,7 @@ router.post('/attachment', authenticateToken, checkBan, requireRole('admin', 'tr
       description || null
     );
 
-    const attachment = db.prepare('SELECT * FROM attachments WHERE id = ?').get(result.lastInsertRowid);
+    const attachment = await db.prepare('SELECT * FROM attachments WHERE id = ?').get(result.lastInsertRowid);
 
     console.log(`✅ File uploaded successfully: ${uploadResult.url}`);
     res.status(201).json(attachment);
@@ -85,7 +85,7 @@ router.post('/attachments', authenticateToken, checkBan, requireRole('admin', 't
 
     const folder = attachment_type === 'image' ? 'images' : 'attachments';
 
-    const stmt = db.prepare(`
+    const stmt = await db.prepare(`
       INSERT INTO attachments (post_id, version_id, filename, original_filename, file_path, file_size, mime_type, attachment_type, description)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
@@ -97,7 +97,7 @@ router.post('/attachments', authenticateToken, checkBan, requireRole('admin', 't
         console.log(`Uploading ${file.originalname} to Cloud Storage...`);
         const uploadResult = await uploadToCloudStorage(file, folder);
 
-        const result = stmt.run(
+        const result = await stmt.run(
           post_id,
           version_id || null,
           uploadResult.filename,
@@ -109,7 +109,7 @@ router.post('/attachments', authenticateToken, checkBan, requireRole('admin', 't
           description || null
         );
 
-        const attachment = db.prepare('SELECT * FROM attachments WHERE id = ?').get(result.lastInsertRowid);
+        const attachment = await db.prepare('SELECT * FROM attachments WHERE id = ?').get(result.lastInsertRowid);
         attachments.push(attachment);
         console.log(`✅ File uploaded: ${uploadResult.url}`);
       } catch (error) {
@@ -133,7 +133,7 @@ router.post('/attachments', authenticateToken, checkBan, requireRole('admin', 't
 // Delete attachment (admin/translator only)
 router.delete('/attachment/:id', authenticateToken, checkBan, requireRole('admin', 'translator'), async (req: Request, res: Response) => {
   try {
-    const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
+    const attachment: any = await db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
 
     if (!attachment) {
       res.status(404).json({ error: 'Attachment not found' });
@@ -155,7 +155,7 @@ router.delete('/attachment/:id', authenticateToken, checkBan, requireRole('admin
     }
 
     // Delete from database
-    db.prepare('DELETE FROM attachments WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM attachments WHERE id = ?').run(req.params.id);
 
     res.json({ message: 'Attachment deleted successfully' });
   } catch (error: any) {
@@ -172,7 +172,7 @@ router.get('/attachment/:id', authenticateToken, async (req: Request, res: Respo
       return;
     }
 
-    const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
+    const attachment: any = await db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
 
     if (!attachment) {
       res.status(404).json({ error: 'Attachment not found' });
@@ -189,7 +189,7 @@ router.get('/attachment/:id', authenticateToken, async (req: Request, res: Respo
       }
 
       // Verificar tier pago do usuário
-      const user = db.prepare('SELECT patreon_tier FROM users WHERE id = ?').get(req.user.id) as any;
+      const user = await db.prepare('SELECT patreon_tier FROM users WHERE id = ?').get(req.user.id) as any;
       
       if (user && user.patreon_tier && user.patreon_tier !== 'free') {
         // Usuário tem tier pago - download direto
@@ -226,7 +226,7 @@ router.get('/adsense-info/:id', authenticateToken, async (req: Request, res: Res
       return;
     }
 
-    const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
+    const attachment: any = await db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
 
     if (!attachment) {
       res.status(404).json({ error: 'Attachment not found' });
@@ -255,7 +255,7 @@ router.post('/generate-download-token/:id', authenticateToken, async (req: Reque
       return;
     }
 
-    const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
+    const attachment: any = await db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
 
     if (!attachment) {
       res.status(404).json({ error: 'Attachment not found' });
@@ -301,7 +301,7 @@ router.get('/download-with-token/:id', async (req: Request, res: Response) => {
         return;
       }
 
-      const attachment: any = db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
+      const attachment: any = await db.prepare('SELECT * FROM attachments WHERE id = ?').get(req.params.id);
 
       if (!attachment) {
         res.status(404).json({ error: 'Attachment not found' });

@@ -5,9 +5,9 @@ import { authenticateToken, requireRole } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get all tag types
-router.get('/types', (req: Request, res: Response) => {
+router.get('/types', async (req: Request, res: Response) => {
   try {
-    const tagTypes = db.prepare('SELECT * FROM tag_types ORDER BY name').all();
+    const tagTypes = await db.prepare('SELECT * FROM tag_types ORDER BY name').all();
     res.json(tagTypes);
   } catch (error) {
     console.error('Error fetching tag types:', error);
@@ -16,7 +16,7 @@ router.get('/types', (req: Request, res: Response) => {
 });
 
 // Get all tags (optionally filtered by type)
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const { type } = req.query;
 
@@ -35,7 +35,7 @@ router.get('/', (req: Request, res: Response) => {
 
     query += ' ORDER BY tt.name, t.name';
 
-    const tags = db.prepare(query).all(...params);
+    const tags = await db.prepare(query).all(...params);
     res.json(tags);
   } catch (error) {
     console.error('Error fetching tags:', error);
@@ -44,9 +44,9 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // Get tags for a specific post
-router.get('/post/:postId', (req: Request, res: Response) => {
+router.get('/post/:postId', async (req: Request, res: Response) => {
   try {
-    const tags = db.prepare(`
+    const tags = await db.prepare(`
       SELECT t.*, tt.name as type_name, tt.slug as type_slug
       FROM tags t
       JOIN post_tags pt ON t.id = pt.tag_id
@@ -63,7 +63,7 @@ router.get('/post/:postId', (req: Request, res: Response) => {
 });
 
 // Create new tag (admin only)
-router.post('/', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.post('/', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const { tag_type_id, name, description } = req.body;
 
@@ -74,12 +74,12 @@ router.post('/', authenticateToken, requireRole('admin'), (req: Request, res: Re
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-    const result = db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO tags (tag_type_id, name, slug, description)
       VALUES (?, ?, ?, ?)
     `).run(tag_type_id, name, slug, description || null);
 
-    const tag = db.prepare('SELECT * FROM tags WHERE id = ?').get(result.lastInsertRowid);
+    const tag = await db.prepare('SELECT * FROM tags WHERE id = ?').get(result.lastInsertRowid);
 
     res.status(201).json(tag);
   } catch (error: any) {
@@ -93,26 +93,26 @@ router.post('/', authenticateToken, requireRole('admin'), (req: Request, res: Re
 });
 
 // Update tag (admin only)
-router.put('/:id', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.put('/:id', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const { name, description } = req.body;
     const slug = name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : undefined;
 
     if (name) {
-      db.prepare(`
+      await db.prepare(`
         UPDATE tags
         SET name = ?, slug = ?, description = ?
         WHERE id = ?
       `).run(name, slug, description || null, req.params.id);
     } else {
-      db.prepare(`
+      await db.prepare(`
         UPDATE tags
         SET description = ?
         WHERE id = ?
       `).run(description || null, req.params.id);
     }
 
-    const tag = db.prepare('SELECT * FROM tags WHERE id = ?').get(req.params.id);
+    const tag = await db.prepare('SELECT * FROM tags WHERE id = ?').get(req.params.id);
     res.json(tag);
   } catch (error) {
     console.error('Error updating tag:', error);
@@ -121,9 +121,9 @@ router.put('/:id', authenticateToken, requireRole('admin'), (req: Request, res: 
 });
 
 // Delete tag (admin only)
-router.delete('/:id', authenticateToken, requireRole('admin'), (req: Request, res: Response) => {
+router.delete('/:id', authenticateToken, requireRole('admin'), async (req: Request, res: Response) => {
   try {
-    db.prepare('DELETE FROM tags WHERE id = ?').run(req.params.id);
+    await db.prepare('DELETE FROM tags WHERE id = ?').run(req.params.id);
     res.json({ message: 'Tag deleted successfully' });
   } catch (error) {
     console.error('Error deleting tag:', error);
@@ -132,7 +132,7 @@ router.delete('/:id', authenticateToken, requireRole('admin'), (req: Request, re
 });
 
 // Add tag to post (admin/translator only)
-router.post('/post/:postId', authenticateToken, requireRole('admin', 'translator'), (req: Request, res: Response) => {
+router.post('/post/:postId', authenticateToken, requireRole('admin', 'translator'), async (req: Request, res: Response) => {
   try {
     const { tag_id } = req.body;
 
@@ -141,7 +141,7 @@ router.post('/post/:postId', authenticateToken, requireRole('admin', 'translator
       return;
     }
 
-    db.prepare(`
+    await db.prepare(`
       INSERT OR IGNORE INTO post_tags (post_id, tag_id)
       VALUES (?, ?)
     `).run(req.params.postId, tag_id);
@@ -154,9 +154,9 @@ router.post('/post/:postId', authenticateToken, requireRole('admin', 'translator
 });
 
 // Remove tag from post (admin/translator only)
-router.delete('/post/:postId/:tagId', authenticateToken, requireRole('admin', 'translator'), (req: Request, res: Response) => {
+router.delete('/post/:postId/:tagId', authenticateToken, requireRole('admin', 'translator'), async (req: Request, res: Response) => {
   try {
-    db.prepare(`
+    await db.prepare(`
       DELETE FROM post_tags
       WHERE post_id = ? AND tag_id = ?
     `).run(req.params.postId, req.params.tagId);
@@ -169,7 +169,7 @@ router.delete('/post/:postId/:tagId', authenticateToken, requireRole('admin', 't
 });
 
 // Search posts by tags
-router.get('/search', (req: Request, res: Response) => {
+router.get('/search', async (req: Request, res: Response) => {
   try {
     const { query, platform, genre, fetish } = req.query;
 
@@ -213,7 +213,7 @@ router.get('/search', (req: Request, res: Response) => {
 
     sql += ' GROUP BY p.id ORDER BY matching_tags DESC, p.updated_at DESC';
 
-    const posts = db.prepare(sql).all(...params);
+    const posts = await db.prepare(sql).all(...params);
 
     res.json(posts);
   } catch (error) {
