@@ -11,14 +11,14 @@ const __dirname = dirname(__filename);
 
 // PostgreSQL connection configuration
 const pool = new Pool({
-  host: process.env.DB_HOST || '/cloudsql/starstranslations-prod:us-central1:starstranslations-db',
+  host: process.env.DB_HOST || '/cloudsql/starstranslations-prod:us-central1:starstrasnlations-db',
   port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'starstranslations',
+  database: process.env.DB_NAME || 'starstrasnlations',
   user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '1311',
+  password: process.env.DB_PASSWORD || 'Sss_!98906175',
   // For Cloud SQL Unix socket connection
   ...(process.env.NODE_ENV === 'production' && {
-    host: '/cloudsql/starstranslations-prod:us-central1:starstranslations-db',
+    host: '/cloudsql/starstranslations-prod:us-central1:starstrasnlations-db',
   })
 });
 
@@ -26,7 +26,7 @@ console.log('🐘 PostgreSQL connection configured');
 console.log('📍 Host:', process.env.NODE_ENV === 'production' 
   ? '/cloudsql/...' 
   : process.env.DB_HOST || 'localhost');
-console.log('📊 Database:', process.env.DB_NAME || 'starstranslations');
+console.log('📊 Database:', process.env.DB_NAME || 'starstrasnlations');
 
 interface PreparedStatement {
   run: (...params: any[]) => Promise<{ changes: number; lastInsertRowid: number }>;
