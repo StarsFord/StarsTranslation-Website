@@ -8,3 +8,4 @@ uploads/*
 *.log
 service-account-key.json
 env.yaml
+deploy.ps1
