@@ -20,46 +20,81 @@ const Header = () => {
     navigate('/');
   };
 
+  const closeMenu = () => {
+    setMobileMenuOpen(false);
+    setHomepageDropdownOpen(false);
+  };
+
   return (
     <header className="header">
       <div className="container">
         <div className="header-content">
-          <Link to="/" className="logo">
+          <Link to="/" className="logo" onClick={closeMenu}>
             <span className="logo-icon">⭐</span>
             <span className="logo-text">StarsTranslations</span>
           </Link>
 
           <nav className={`nav ${mobileMenuOpen ? 'nav-open' : ''}`}>
             <div
-              className="nav-dropdown"
+              className={`nav-dropdown ${homepageDropdownOpen ? 'dropdown-active' : ''}`}
               onMouseEnter={() => setHomepageDropdownOpen(true)}
               onMouseLeave={() => setHomepageDropdownOpen(false)}
             >
-              <button className="nav-link dropdown-trigger">
+              <button
+                className="nav-link dropdown-trigger"
+                onClick={() => setHomepageDropdownOpen(!homepageDropdownOpen)}
+              >
                 Homepage
                 <span className="dropdown-arrow">▼</span>
               </button>
               <div className={`dropdown-menu ${homepageDropdownOpen ? 'dropdown-open' : ''}`}>
-                <Link to="/" className="dropdown-item">All Posts</Link>
-                <Link to="/category/doujin-game" className="dropdown-item">Doujin Game</Link>
-                <Link to="/category/visual-novel" className="dropdown-item">Visual Novel</Link>
-                <Link to="/category/doujin-manga" className="dropdown-item">Doujin Manga</Link>
+                <Link to="/" className="dropdown-item" onClick={closeMenu}>All Posts</Link>
+                <Link to="/category/doujin-game" className="dropdown-item" onClick={closeMenu}>Doujin Game</Link>
+                <Link to="/category/visual-novel" className="dropdown-item" onClick={closeMenu}>Visual Novel</Link>
+                <Link to="/category/doujin-manga" className="dropdown-item" onClick={closeMenu}>Doujin Manga</Link>
               </div>
             </div>
 
-            <Link to="/search" className="nav-link">Search</Link>
+            <Link to="/search" className="nav-link" onClick={closeMenu}>Search</Link>
 
             {isAuthenticated() && (
-              <Link to="/following" className="nav-link">Following</Link>
+              <Link to="/following" className="nav-link" onClick={closeMenu}>Following</Link>
             )}
 
             {isTranslator() && (
-              <Link to="/admin" className="nav-link nav-link-admin">
+              <Link to="/admin" className="nav-link nav-link-admin" onClick={closeMenu}>
                 Admin
               </Link>
             )}
+
+            {/* Seção do usuário visível apenas no menu mobile */}
+            <div className="mobile-user-section">
+              {isAuthenticated() && user ? (
+                <>
+                  <div className="mobile-user-info">
+                    {user.avatar_url && (
+                      <img src={user.avatar_url} alt={user.username} className="user-avatar" />
+                    )}
+                    <div className="mobile-user-details">
+                      <span className="user-name">{user.username}</span>
+                      {(isAdmin() || isTranslator()) && (
+                        <span className="user-role">{user.role}</span>
+                      )}
+                    </div>
+                  </div>
+                  <button onClick={() => { handleLogout(); closeMenu(); }} className="btn btn-secondary mobile-logout">
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => { handleLogin(); closeMenu(); }} className="btn btn-primary mobile-login">
+                  Login with Patreon
+                </button>
+              )}
+            </div>
           </nav>
 
+          {/* Ações do usuário visíveis apenas no desktop */}
           <div className="header-actions">
             {isAuthenticated() && user ? (
               <div className="user-menu">
@@ -84,8 +119,9 @@ const Header = () => {
           </div>
 
           <button
-            className="mobile-menu-button"
+            className={`mobile-menu-button ${mobileMenuOpen ? 'menu-open' : ''}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
           >
             <span></span>
             <span></span>
