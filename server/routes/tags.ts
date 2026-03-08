@@ -142,8 +142,9 @@ router.post('/post/:postId', authenticateToken, requireRole('admin', 'translator
     }
 
     await db.prepare(`
-      INSERT OR IGNORE INTO post_tags (post_id, tag_id)
+      INSERT INTO post_tags (post_id, tag_id)
       VALUES (?, ?)
+      ON CONFLICT DO NOTHING
     `).run(req.params.postId, tag_id);
 
     res.json({ message: 'Tag added to post' });

@@ -86,6 +86,37 @@ router.get('/id/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Get posts user is following
+router.get('/following', authenticateToken, checkBan, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const posts = await db.prepare(`
+      SELECT
+        p.*,
+        c.name as category_name,
+        c.slug as category_slug,
+        u.username as author_name,
+        u.avatar_url as author_avatar,
+        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
+        (SELECT version_number FROM post_versions WHERE post_id = p.id ORDER BY created_at DESC LIMIT 1) as latest_version
+      FROM posts p
+      JOIN categories c ON p.category_id = c.id
+      JOIN users u ON p.author_id = u.id
+      JOIN post_followers pf ON pf.post_id = p.id
+      WHERE pf.user_id = ? AND p.status = 'published'
+      ORDER BY p.updated_at DESC
+    `).all(req.user.id);
+
+    res.json(posts);
+  } catch (error) {
+    console.error('Error fetching following posts:', error);
+    res.status(500).json({ error: 'Failed to fetch following posts' });
+  }
+});
+
 // Get single post by slug
 router.get('/:slug', optionalAuth, async (req, res) => {
   try {
@@ -302,37 +333,6 @@ router.post('/:id/versions', authenticateToken, requireRole('admin', 'translator
   } catch (error) {
     console.error('Error creating version:', error);
     res.status(500).json({ error: 'Failed to create version' });
-  }
-});
-
-// Get posts user is following
-router.get('/following', authenticateToken, checkBan, async (req, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
-
-    const posts = await db.prepare(`
-      SELECT
-        p.*,
-        c.name as category_name,
-        c.slug as category_slug,
-        u.username as author_name,
-        u.avatar_url as author_avatar,
-        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
-        (SELECT version_number FROM post_versions WHERE post_id = p.id ORDER BY created_at DESC LIMIT 1) as latest_version
-      FROM posts p
-      JOIN categories c ON p.category_id = c.id
-      JOIN users u ON p.author_id = u.id
-      JOIN post_followers pf ON pf.post_id = p.id
-      WHERE pf.user_id = ? AND p.status = 'published'
-      ORDER BY p.updated_at DESC
-    `).all(req.user.id);
-
-    res.json(posts);
-  } catch (error) {
-    console.error('Error fetching following posts:', error);
-    res.status(500).json({ error: 'Failed to fetch following posts' });
   }
 });
 
