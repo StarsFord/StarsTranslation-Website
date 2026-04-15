@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { useSeo } from '../hooks/useSeo';
 import './Following.css';
 import { PostCardData } from '../types/post';
 
@@ -10,6 +11,13 @@ const Following: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [posts, setPosts] = useState<PostCardData[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useSeo({
+    title: 'Following',
+    description: 'Manage posts you follow and stay updated with new translation versions.',
+    canonicalPath: '/following',
+    robots: 'noindex, nofollow',
+  });
 
   useEffect(() => {
     if (isAuthenticated()) {

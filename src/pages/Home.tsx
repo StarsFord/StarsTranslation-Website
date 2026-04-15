@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../utils/api';
 import PostCard from '../components/PostCard';
+import { useSeo } from '../hooks/useSeo';
 import './Home.css';
 import { PostData } from '../types/post';
 
@@ -42,11 +43,33 @@ const Home: React.FC = () => {
     ).join(' ');
   };
 
+  const categoryTitle = getCategoryTitle();
+
+  useSeo({
+    title: category ? `${categoryTitle} Translations` : 'Game & Visual Novel Translations',
+    description: category
+      ? `Browse ${categoryTitle} translations, release updates, and download links on StarsTranslations.`
+      : 'Discover game and visual novel translations, release notes, screenshots, and updates on StarsTranslations.',
+    canonicalPath: category ? `/category/${category}` : '/',
+    keywords: 'game translation, visual novel translation, patch download, translation updates',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'StarsTranslations',
+      url: import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : ''),
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/search?query={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  });
+
   return (
     <div className="home">
       <div className="container">
         <div className="home-header">
-          <h1>{getCategoryTitle()}</h1>
+          <h1>{categoryTitle}</h1>
 
           <div className="filter-group">
             <button

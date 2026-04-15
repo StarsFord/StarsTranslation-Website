@@ -1,10 +1,18 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSeo } from '../hooks/useSeo';
 import './Login.css';
 
 const Login: React.FC = () => {
   const { isAuthenticated } = useAuth();
+
+  useSeo({
+    title: 'Login',
+    description: 'Sign in with Patreon to comment, follow updates, and access StarsTranslations features.',
+    canonicalPath: '/login',
+    robots: 'noindex, nofollow',
+  });
 
   if (isAuthenticated()) {
     return <Navigate to="/" />;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
+import { useSeo } from '../hooks/useSeo';
 import './Search.css';
 
 interface Tag {
@@ -37,6 +38,13 @@ const Search = () => {
   const [results, setResults] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+
+  useSeo({
+    title: 'Search Translations',
+    description: 'Search translated games and visual novels by title, platform, genre, and tags on StarsTranslations.',
+    canonicalPath: '/search',
+    keywords: 'search game translation, visual novel tags, translated games',
+  });
 
   useEffect(() => {
     fetchTags();

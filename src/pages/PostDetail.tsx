@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { PostData, Tag, GroupedAttachments, ExternalLink } from '../types/post';
 import Comments from '../components/Comments';
+import { useSeo } from '../hooks/useSeo';
 import './PostDetail.css';
 
 const PostDetail: React.FC = () => {
@@ -133,6 +134,32 @@ const PostDetail: React.FC = () => {
       return acc;
     }, { translated: [], original: [], images: [], other: [] });
   };
+
+  useSeo({
+    title: post?.title ? `${post.title} Translation` : 'Post',
+    description: post?.description || 'Translation details, downloads, screenshots, and changelog on StarsTranslations.',
+    canonicalPath: slug ? `/post/${slug}` : '/post',
+    image: post?.thumbnail_url || undefined,
+    type: 'article',
+    jsonLd: post
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: post.title,
+          description: post.description || undefined,
+          image: post.thumbnail_url || undefined,
+          dateModified: post.updated_at,
+          author: {
+            '@type': 'Person',
+            name: post.author_name,
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/post/${post.slug}`,
+          },
+        }
+      : null,
+  });
 
   if (loading) {
     return (
