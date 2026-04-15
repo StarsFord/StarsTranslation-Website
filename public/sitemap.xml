@@ -2,13 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>http://localhost:5173/</loc>
-    <lastmod>2026-04-15T12:12:47.472Z</lastmod>
+    <lastmod>2026-04-15T12:32:19.471Z</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>http://localhost:5173/search</loc>
-    <lastmod>2026-04-15T12:12:47.472Z</lastmod>
+    <lastmod>2026-04-15T12:32:19.471Z</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
