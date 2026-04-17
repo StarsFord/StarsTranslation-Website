@@ -44,7 +44,7 @@ export const partners: Partner[] = [
   },
   {
     name: 'Hentai Games and +18 chat',
-    url: 't.me/hentai69chat',
+    url: 'https://t.me/hentai69chat',
     description: "A telegram server focused on sharing and discussing adult games, doujin, manga and anime, with a welcoming community for fans of the genre.",
     logo: '',
     category: 'Community',
