@@ -13,6 +13,7 @@ import TagsManagement from './pages/TagsManagement';
 import UsersManagement from './pages/UsersManagement';
 import Following from './pages/Following';
 import AdSense from './pages/AdSense';
+import Partners from './pages/Partners';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/category/:category" element={<Home />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/partners" element={<Partners />} />
           <Route path="/following" element={<Following />} />
           <Route path="/post/:slug" element={<PostDetail />} />
           <Route path="/login" element={<Login />} />

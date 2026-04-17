@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { partners } from '../data/PartnersData';
 import './Footer.css';
 
 const Footer: React.FC = () => {
@@ -17,6 +19,26 @@ const Footer: React.FC = () => {
               Support on Patreon
             </a>
           </div>
+
+          {partners.length > 0 && (
+            <div className="footer-section">
+              <h4>
+                Partners{' '}
+                <Link to="/partners" className="footer-partners-see-all">
+                  See all →
+                </Link>
+              </h4>
+              <ul className="footer-partners-list">
+                {partners.slice(0, 4).map((p) => (
+                  <li key={p.url}>
+                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="footer-partner-link">
+                      {p.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="footer-section">
             <h4>Legal</h4>

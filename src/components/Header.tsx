@@ -57,6 +57,8 @@ const Header = () => {
 
             <Link to="/search" className="nav-link" onClick={closeMenu}>Search</Link>
 
+            <Link to="/partners" className="nav-link" onClick={closeMenu}>Partners</Link>
+
             {isAuthenticated() && (
               <Link to="/following" className="nav-link" onClick={closeMenu}>Following</Link>
             )}
