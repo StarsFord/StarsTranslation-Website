@@ -29,6 +29,13 @@ export const partners: Partner[] = [
   //   category: 'Translation Group',
   // },
   {
+    name: 'StarsTranslations Channel',
+    url: 'https://t.me/nsfwhgames',
+    description: "Our telegram channel where you can easily get notified about new releases, updates and news related to our projects, as well as interact with the community and share your thoughts.",
+    logo: '',
+    category: 'Community',
+  },
+  {
     name: 'hentaiKuni',
     url: 'https://hentaikuni.com/',
     description: "HentaiKuni it's a platform for downloading adult anime, CGs, doujins and mangás, focusing mostly on lolicon and shotacon niche.",
