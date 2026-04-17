@@ -20,14 +20,6 @@ export interface Partner {
 }
 
 export const partners: Partner[] = [
-  // ── Exemplo — substitua ou adicione abaixo ──────────────────
-  {
-    name: 'Example Translations',
-    url: 'https://example.com',
-    description: 'A great fan-translation group focused on doujin games and visual novels.',
-    logo: '',
-    category: 'Translation Group',
-  },
   // ── Adicione novos parceiros aqui ───────────────────────────
   // {
   //   name: 'Nome do Parceiro',
