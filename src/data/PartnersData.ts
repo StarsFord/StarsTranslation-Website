@@ -39,7 +39,7 @@ export const partners: Partner[] = [
     name: 'DoujinBlog',
     url: 'https://doujinblog.org/',
     description: "DoujinBlog it's a platform focused on adult games, doujin and idols appreciations mostly on JP content, broading niche access to a wider audience.",
-    logo: '',
+    logo: 'https://doujinblog.org/favicon.ico',
     category: 'Downloads Platform',
   },
   {
