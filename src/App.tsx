@@ -14,11 +14,13 @@ import UsersManagement from './pages/UsersManagement';
 import Following from './pages/Following';
 import AdSense from './pages/AdSense';
 import Partners from './pages/Partners';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   return (
     <div className="app">
       <Header />
+      <Analytics />
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
