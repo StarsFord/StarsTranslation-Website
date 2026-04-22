@@ -3,20 +3,22 @@ import path from 'node:path';
 
 const rootDir = process.cwd();
 const publicDir = path.join(rootDir, 'public');
+const DEFAULT_SITE_URL = 'https://stars-translation-website.vercel.app';
+const DEFAULT_API_URL = 'https://starstranslations-backend-805236256394.us-central1.run.app';
 
 const normalizeSiteUrl = (url) => {
   const trimmed = (url || '').trim();
-  if (!trimmed) return 'http://localhost:5173';
+  if (!trimmed) return DEFAULT_SITE_URL;
   return trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
 };
 
 const siteUrl = normalizeSiteUrl(process.env.VITE_SITE_URL);
 const apiUrl = normalizeSiteUrl(
-  process.env.VITE_API_URL || process.env.BACKEND_URL || 'http://localhost:3000'
+  process.env.VITE_API_URL || process.env.BACKEND_URL || process.env.SITEMAP_API_URL || DEFAULT_API_URL
 );
 const now = new Date().toISOString();
 
-const staticRoutes = ['/', '/search'];
+const staticRoutes = ['/', '/search', '/partners'];
 
 const xmlEscape = (value) =>
   String(value)
@@ -56,8 +58,30 @@ const fetchPublishedPosts = async () => {
   }
 };
 
+const fetchCategories = async () => {
+  const endpoint = `${apiUrl}/api/categories`;
+
+  try {
+    const response = await fetch(endpoint);
+    if (!response.ok) {
+      console.warn(`Could not fetch categories for sitemap (${response.status}) from ${endpoint}`);
+      return [];
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .filter((category) => category && category.slug)
+      .map((category) => String(category.slug));
+  } catch (error) {
+    console.warn(`Could not fetch categories for sitemap from ${endpoint}:`, error.message);
+    return [];
+  }
+};
+
 const generateSitemap = async () => {
-  const posts = await fetchPublishedPosts();
+  const [posts, categories] = await Promise.all([fetchPublishedPosts(), fetchCategories()]);
 
   const staticUrls = staticRoutes.map(
     (route) => `  <url>
@@ -77,9 +101,18 @@ const generateSitemap = async () => {
   </url>`
   );
 
+  const categoryUrls = categories.map(
+    (categorySlug) => `  <url>
+    <loc>${xmlEscape(`${siteUrl}/category/${categorySlug}`)}</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>`
+  );
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[...staticUrls, ...postUrls].join('\n')}
+${[...staticUrls, ...categoryUrls, ...postUrls].join('\n')}
 </urlset>
 `;
 };
