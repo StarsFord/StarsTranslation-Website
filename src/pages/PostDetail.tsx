@@ -5,17 +5,19 @@ import api from '../utils/api';
 import { PostData, Tag, GroupedAttachments, ExternalLink } from '../types/post';
 import Comments from '../components/Comments';
 import { useSeo } from '../hooks/useSeo';
+import { buildSupporterShareContent, buildTelegramShareText, ShareImage } from '../utils/postShareContent';
 import './PostDetail.css';
 
 const PostDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [post, setPost] = useState<PostData | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [following, setFollowing] = useState<boolean>(false);
+  const [copyStatus, setCopyStatus] = useState<'supporter' | 'telegram' | 'error' | null>(null);
 
   useEffect(() => {
     fetchPost();
@@ -135,6 +137,63 @@ const PostDetail: React.FC = () => {
     }, { translated: [], original: [], images: [], other: [] });
   };
 
+  const getAttachmentImageUrl = (filePath: string): string => {
+    if (filePath.startsWith('http')) return filePath;
+
+    const backendUrl = process.env.BACKEND_URL || 'https://starstranslations-backend-805236256394.us-central1.run.app';
+    return `${backendUrl}${filePath}`;
+  };
+
+  const handleCopyPromotion = async (format: 'supporter' | 'telegram'): Promise<void> => {
+    if (!post) return;
+
+    const groupedAttachments = groupAttachments();
+    const images: ShareImage[] = [
+      ...(post.thumbnail_url ? [{ label: 'Cover', url: post.thumbnail_url, alt: `${post.title} cover` }] : []),
+      ...groupedAttachments.images.map((attachment, index) => ({
+        label: `Screenshot ${index + 1}`,
+        url: getAttachmentImageUrl(attachment.file_path),
+        alt: attachment.description || attachment.original_filename,
+      })),
+    ];
+    const shareInput = {
+      post,
+      tags,
+      postUrl: `${window.location.origin}/post/${post.slug}`,
+      images,
+    };
+
+    try {
+      if (format === 'supporter') {
+        const content = buildSupporterShareContent(shareInput);
+
+        if (typeof ClipboardItem !== 'undefined' && navigator.clipboard.write) {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({
+                'text/plain': new Blob([content.text], { type: 'text/plain' }),
+                'text/html': new Blob([content.html], { type: 'text/html' }),
+              }),
+            ]);
+          } catch {
+            await navigator.clipboard.writeText(content.text);
+          }
+        } else {
+          await navigator.clipboard.writeText(content.text);
+        }
+      } else {
+        await navigator.clipboard.writeText(buildTelegramShareText(shareInput));
+      }
+
+      setCopyStatus(format);
+      window.setTimeout(() => setCopyStatus(null), 3000);
+    } catch (copyError) {
+      console.error('Failed to copy promotion content:', copyError);
+      setCopyStatus('error');
+      window.setTimeout(() => setCopyStatus(null), 4000);
+    }
+  };
+
   useSeo({
     title: post?.title ? `${post.title} Translation` : 'Post',
     description: post?.description || 'Translation details, downloads, screenshots, and changelog on StarsTranslations.',
@@ -249,6 +308,34 @@ const PostDetail: React.FC = () => {
             )}
           </div>
         </div>
+
+        {isAdmin() && (
+          <section className="post-section promotion-tools" aria-labelledby="promotion-tools-title">
+            <div>
+              <h2 id="promotion-tools-title">Promotion tools</h2>
+              <p>Copy this post's metadata, tags, cover and gallery in a channel-ready format.</p>
+            </div>
+            <div className="promotion-actions">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => handleCopyPromotion('supporter')}
+              >
+                {copyStatus === 'supporter' ? 'Copied!' : 'Copy for Patreon / SubscribeStar'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => handleCopyPromotion('telegram')}
+              >
+                {copyStatus === 'telegram' ? 'Copied!' : 'Copy for Telegram'}
+              </button>
+            </div>
+            <p className={`promotion-copy-status${copyStatus === 'error' ? ' is-error' : ''}`} aria-live="polite">
+              {copyStatus === 'error' ? 'Could not access the clipboard. Check the browser permission and try again.' : ''}
+            </p>
+          </section>
+        )}
 
 
         { /* Description */ }
@@ -436,9 +523,7 @@ const PostDetail: React.FC = () => {
             <div className="images-grid">
               {attachments.images.map((att) => {
                 // Se já é uma URL completa (GCS), usar diretamente
-                const imageUrl = att.file_path.startsWith('http') 
-                  ? att.file_path 
-                  : `${process.env.BACKEND_URL || 'https://starstranslations-backend-805236256394.us-central1.run.app'}${att.file_path}`;
+                const imageUrl = getAttachmentImageUrl(att.file_path);
                 
                 return (
                   <div key={att.id} className="image-item">
