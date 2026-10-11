@@ -5,6 +5,7 @@ import api from '../utils/api';
 import './PostEditor.css';
 import UploadProgress from "../components/UploadProgress";
 import { Category, ExternalLink, Files, SelectedTags, Tag, VersionData, UploadProgress as UploadProgressType, PostFormData } from '../types/post';
+import { inferDownloadLinkLabel } from '../utils/downloadLinkLabel';
 
 const PostEditor: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -64,9 +65,25 @@ const PostEditor: React.FC = () => {
   };
 
   const handleLinkChange = (index: number, field: keyof ExternalLink, value: string): void => {
-    const newLinks = [...externalLinks];
-    newLinks[index][field] = value;
-    setExternalLinks(newLinks);
+    setExternalLinks((currentLinks) => currentLinks.map((link, linkIndex) => {
+      if (linkIndex !== index) {
+        return link;
+      }
+
+      if (field !== 'url') {
+        return { ...link, [field]: value };
+      }
+
+      const previousInferredLabel = inferDownloadLinkLabel(link.url);
+      const inferredLabel = inferDownloadLinkLabel(value);
+      const shouldUpdateLabel = !link.label.trim() || link.label === previousInferredLabel;
+
+      return {
+        ...link,
+        url: value,
+        label: shouldUpdateLabel ? inferredLabel : link.label,
+      };
+    }));
   };
 
   const handleRemoveLink = (index: number): void => {
