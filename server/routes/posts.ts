@@ -7,9 +7,32 @@ const router = express.Router();
 // Get all posts with filters
 router.get('/', optionalAuth, async (req: Request, res: Response) => {
   try {
-    const { category, translated, limit = 20, offset = 0 } = req.query;
+    const { category, translated, include_total } = req.query;
+    const requestedLimit = Number.parseInt(String(req.query.limit ?? 20), 10);
+    const requestedOffset = Number.parseInt(String(req.query.offset ?? 0), 10);
+    const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : 20;
+    const offset = Number.isFinite(requestedOffset) ? Math.max(requestedOffset, 0) : 0;
 
-    let query = `
+    const fromAndWhere = `
+      FROM posts p
+      JOIN categories c ON p.category_id = c.id
+      JOIN users u ON p.author_id = u.id
+      WHERE p.status = 'published'
+    `;
+    let filters = '';
+    const params: any[] = [];
+
+    if (category) {
+      filters += ' AND c.slug = ?';
+      params.push(category);
+    }
+
+    if (translated !== undefined) {
+      filters += ' AND p.is_translated = ?';
+      params.push(translated === 'true' ? 1 : 0);
+    }
+
+    const query = `
       SELECT
         p.*,
         c.name as category_name,
@@ -18,28 +41,32 @@ router.get('/', optionalAuth, async (req: Request, res: Response) => {
         u.avatar_url as author_avatar,
         (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
         (SELECT version_number FROM post_versions WHERE post_id = p.id ORDER BY created_at DESC LIMIT 1) as latest_version
-      FROM posts p
-      JOIN categories c ON p.category_id = c.id
-      JOIN users u ON p.author_id = u.id
-      WHERE p.status = 'published'
+      ${fromAndWhere}
+      ${filters}
+      ORDER BY p.updated_at DESC LIMIT ? OFFSET ?
     `;
 
-    const params: any[] = [];
+    if (include_total === 'true') {
+      const countQuery = `SELECT COUNT(*) as total ${fromAndWhere} ${filters}`;
+      const [posts, countResult] = await Promise.all([
+        db.prepare(query).all(...params, limit, offset),
+        db.prepare(countQuery).get(...params)
+      ]);
+      const total = Number(countResult?.total || 0);
 
-    if (category) {
-      query += ' AND c.slug = ?';
-      params.push(category);
+      return res.json({
+        posts,
+        pagination: {
+          total,
+          limit,
+          offset,
+          currentPage: Math.floor(offset / limit) + 1,
+          totalPages: Math.ceil(total / limit)
+        }
+      });
     }
 
-    if (translated !== undefined) {
-      query += ' AND p.is_translated = ?';
-      params.push(translated === 'true' ? 1 : 0);
-    }
-
-    query += ' ORDER BY p.updated_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(String(limit)), parseInt(String(offset)));
-
-    const posts = await db.prepare(query).all(...params);
+    const posts = await db.prepare(query).all(...params, limit, offset);
 
     res.json(posts);
   } catch (error) {
@@ -191,7 +218,10 @@ router.post('/', authenticateToken, checkBan, requireRole('admin', 'translator')
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const { title, slug, description, content, category_id, is_translated, thumbnail_url, external_links } = req.body;
+    const {
+      title, developer, original_title, original_link, slug, description, content,
+      category_id, is_translated, thumbnail_url, external_links
+    } = req.body;
 
     if (!title || !slug || !category_id) {
       return res.status(400).json({ error: 'Title, slug, and category are required' });
@@ -204,12 +234,15 @@ router.post('/', authenticateToken, checkBan, requireRole('admin', 'translator')
     const linksJson = external_links ? JSON.stringify(external_links.filter((l: any) => l.label && l.url)) : null;
 
     const stmt = await db.prepare(`
-      INSERT INTO posts (title, slug, description, content, category_id, author_id, is_translated, thumbnail_url, external_links, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO posts (title, developer, original_title, original_link, slug, description, content, category_id, author_id, is_translated, thumbnail_url, external_links, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = await stmt.run(
       title,
+      developer || null,
+      original_title || null,
+      original_link || null,
       slug,
       description,
       content,
@@ -249,7 +282,10 @@ router.put('/:id', authenticateToken, checkBan, requireRole('admin', 'translator
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const { title, slug, description, content, category_id, is_translated, thumbnail_url, external_links } = req.body;
+    const {
+      title, developer, original_title, original_link, slug, description, content,
+      category_id, is_translated, thumbnail_url, external_links
+    } = req.body;
 
     // Stringify external_links if provided
     const linksJson = external_links ? JSON.stringify(external_links.filter((l: any) => l.label && l.url)) : null;
@@ -262,12 +298,15 @@ router.put('/:id', authenticateToken, checkBan, requireRole('admin', 'translator
 
     const stmt = await db.prepare(`
       UPDATE posts
-      SET title = ?, slug = ?, description = ?, content = ?, category_id = ?, is_translated = ?, thumbnail_url = ?, external_links = ?${statusUpdate}, updated_at = CURRENT_TIMESTAMP
+      SET title = ?, developer = ?, original_title = ?, original_link = ?, slug = ?, description = ?, content = ?, category_id = ?, is_translated = ?, thumbnail_url = ?, external_links = ?${statusUpdate}, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
     await stmt.run(
       title,
+      developer || null,
+      original_title || null,
+      original_link || null,
       slug,
       description,
       content,

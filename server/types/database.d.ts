@@ -5,6 +5,7 @@ export interface User {
   email: string | null;
   avatar_url: string | null;
   role: 'admin' | 'translator' | 'user';
+  patreon_tier: string;
   access_token: string | null;
   refresh_token: string | null;
   is_banned: number;
@@ -27,6 +28,9 @@ export interface Category {
 export interface Post {
   id: number;
   title: string;
+  developer: string | null;
+  original_title: string | null;
+  original_link: string | null;
   slug: string;
   description: string | null;
   content: string | null;
@@ -162,6 +166,9 @@ export interface Database {
 // API Request/Response types
 export interface CreatePostRequest {
   title: string;
+  developer?: string;
+  original_title?: string;
+  original_link?: string;
   slug: string;
   description?: string;
   content?: string;

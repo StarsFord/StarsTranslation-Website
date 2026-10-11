@@ -36,6 +36,9 @@ export interface ExternalLink {
 
 export interface PostFormData {
   title: string;
+  developer: string;
+  original_title: string;
+  original_link: string;
   slug: string;
   description: string;
   content: string;
@@ -97,6 +100,9 @@ export interface PendingPost {
 export interface PostData {
   id: number;
   title: string;
+  developer: string | null;
+  original_title: string | null;
+  original_link: string | null;
   slug: string;
   description: string | null;
   content: string | null;

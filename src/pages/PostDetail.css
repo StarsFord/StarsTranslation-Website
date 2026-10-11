@@ -28,6 +28,39 @@
   color: var(--text-primary);
 }
 
+.post-original-info {
+  display: grid;
+  gap: 0.5rem;
+  margin: -0.25rem 0 1rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.post-original-info > div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.75rem;
+}
+
+.post-original-info dt {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.post-original-info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.post-original-info a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.post-original-info a:hover {
+  text-decoration: underline;
+}
+
 .post-badges {
   display: flex;
   gap: 0.5rem;
@@ -188,6 +221,11 @@
 
   .post-title-section h1 {
     font-size: 2rem;
+  }
+
+  .post-original-info > div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
   }
 
   .attachment-item {

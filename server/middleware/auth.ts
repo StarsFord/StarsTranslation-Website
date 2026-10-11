@@ -70,14 +70,14 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction): v
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    req.user = null;
+    req.user = undefined;
     next();
     return;
   }
 
   jwt.verify(token, process.env.JWT_SECRET || 'default-secret', (err, decoded) => {
     if (err) {
-      req.user = null;
+      req.user = undefined;
     } else {
       req.user = decoded as JWTPayload;
     }

@@ -64,7 +64,7 @@ async function importTable(tableName: string) {
     const workbook = XLSX.readFile(xlsxPath);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(worksheet);
+    const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
 
     if (!data || data.length === 0) {
       console.log(`  ⚠️ No data in ${tableName}.xlsx, skipping\n`);

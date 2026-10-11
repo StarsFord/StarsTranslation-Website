@@ -19,49 +19,6 @@ router.get(
   async (req: Request, res: Response) => {
     const user = req.user as User;
 
-    // Buscar informações de tier do Patreon
-    let patronTier = 'free';
-    try {
-      // A estratégia do passport já deve ter as informações do perfil
-      // Vamos atualizar o tier baseado nos dados do Patreon
-      const patreonProfile = (req.user as any).patreonProfile;
-      
-      if (patreonProfile?.included) {
-        // Buscar pelo membership ativo
-        const membership = patreonProfile.included.find(
-          (item: any) => item.type === 'member' && item.attributes?.patron_status === 'active_patron'
-        );
-
-        if (membership) {
-          // Buscar tier associado
-          const tierRelationship = membership.relationships?.currently_entitled_tiers?.data;
-          if (tierRelationship && tierRelationship.length > 0) {
-            // Usuário tem tier pago
-            const tierId = tierRelationship[0].id;
-            const tier = patreonProfile.included.find((item: any) => item.type === 'tier' && item.id === tierId);
-            
-            if (tier) {
-              // Tier pago encontrado
-              patronTier = tier.attributes?.title || 'paid';
-              console.log(`✅ Patreon tier detected: ${patronTier}`);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching Patreon tier:', error);
-      // Se falhar, mantém como 'free'
-    }
-
-    // Atualizar tier no banco de dados
-    try {
-      db.prepare('UPDATE users SET patreon_tier = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-        .run(patronTier, user.id);
-      console.log(`✅ User ${user.username} tier updated to: ${patronTier}`);
-    } catch (error) {
-      console.error('Error updating user tier:', error);
-    }
-
     const token = jwt.sign(
       {
         id: user.id,

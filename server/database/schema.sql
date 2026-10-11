@@ -33,6 +33,9 @@ INSERT OR IGNORE INTO categories (name, slug, description) VALUES
 CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
+    developer TEXT,
+    original_title TEXT,
+    original_link TEXT,
     slug TEXT NOT NULL UNIQUE,
     description TEXT,
     content TEXT,

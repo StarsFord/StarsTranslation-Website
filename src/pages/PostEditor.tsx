@@ -16,6 +16,9 @@ const PostEditor: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<PostFormData>({
     title: '',
+    developer: '',
+    original_title: '',
+    original_link: '',
     slug: '',
     description: '',
     content: '',
@@ -109,6 +112,9 @@ const PostEditor: React.FC = () => {
       const post = response.data;
       setFormData({
         title: post.title,
+        developer: post.developer || '',
+        original_title: post.original_title || '',
+        original_link: post.original_link || '',
         slug: post.slug,
         description: post.description || '',
         content: post.content || '',
@@ -342,6 +348,42 @@ const PostEditor: React.FC = () => {
                 onChange={handleChange}
                 className="input"
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="label">Developer</label>
+              <input
+                type="text"
+                name="developer"
+                value={formData.developer}
+                onChange={handleChange}
+                className="input"
+                placeholder="Original developer or studio"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="label">Original Title</label>
+              <input
+                type="text"
+                name="original_title"
+                value={formData.original_title}
+                onChange={handleChange}
+                className="input"
+                placeholder="Title in the original language"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="label">Original Link</label>
+              <input
+                type="url"
+                name="original_link"
+                value={formData.original_link}
+                onChange={handleChange}
+                className="input"
+                placeholder="https://example.com/original-game"
               />
             </div>
 

@@ -35,6 +35,9 @@ ON CONFLICT (slug) DO NOTHING;
 CREATE TABLE IF NOT EXISTS posts (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
+    developer TEXT,
+    original_title TEXT,
+    original_link TEXT,
     slug TEXT NOT NULL UNIQUE,
     description TEXT,
     content TEXT,
@@ -48,6 +51,11 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY (category_id) REFERENCES categories(id),
     FOREIGN KEY (author_id) REFERENCES users(id)
 );
+
+-- Add metadata fields to databases created before these columns existed.
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS developer TEXT;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS original_title TEXT;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS original_link TEXT;
 
 -- Post versions for tracking updates
 CREATE TABLE IF NOT EXISTS post_versions (

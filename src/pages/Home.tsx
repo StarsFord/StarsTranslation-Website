@@ -6,34 +6,63 @@ import { useSeo } from '../hooks/useSeo';
 import './Home.css';
 import { PostData } from '../types/post';
 
+const POSTS_PER_PAGE = 12;
+
 const Home: React.FC = () => {
   const { category } = useParams<{ category?: string }>();
   const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'translated' | 'untranslated'>('all');
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(0);
 
   useEffect(() => {
+    setPage(1);
+  }, [category]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchPosts = async (): Promise<void> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const params: Record<string, string | number | boolean> = {
+          limit: POSTS_PER_PAGE,
+          offset: (page - 1) * POSTS_PER_PAGE,
+          include_total: true
+        };
+        if (category) params.category = category;
+        if (filter !== 'all') params.translated = filter === 'translated';
+
+        const response = await api.get('/api/posts', { params });
+        if (!cancelled) {
+          setPosts(response.data.posts);
+          setTotalPages(response.data.pagination.totalPages);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Error fetching posts:', err);
+          setError('Failed to load posts');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchPosts();
-  }, [category, filter]);
+    return () => {
+      cancelled = true;
+    };
+  }, [category, filter, page]);
 
-  const fetchPosts = async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const params: any = {};
-      if (category) params.category = category;
-      if (filter !== 'all') params.translated = filter === 'translated';
-
-      const response = await api.get('/api/posts', { params });
-      setPosts(response.data);
-    } catch (err) {
-      console.error('Error fetching posts:', err);
-      setError('Failed to load posts');
-    } finally {
-      setLoading(false);
-    }
+  const changeFilter = (nextFilter: 'all' | 'translated' | 'untranslated'): void => {
+    setFilter(nextFilter);
+    setPage(1);
   };
 
   const getCategoryTitle = (): string => {
@@ -74,19 +103,19 @@ const Home: React.FC = () => {
           <div className="filter-group">
             <button
               className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-              onClick={() => setFilter('all')}
+              onClick={() => changeFilter('all')}
             >
               All
             </button>
             <button
               className={`filter-btn ${filter === 'translated' ? 'active' : ''}`}
-              onClick={() => setFilter('translated')}
+              onClick={() => changeFilter('translated')}
             >
               Translated
             </button>
             <button
               className={`filter-btn ${filter === 'untranslated' ? 'active' : ''}`}
-              onClick={() => setFilter('untranslated')}
+              onClick={() => changeFilter('untranslated')}
             >
               Not Translated
             </button>
@@ -110,11 +139,37 @@ const Home: React.FC = () => {
         )}
 
         {!loading && !error && posts.length > 0 && (
-          <div className="posts-grid">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
+          <>
+            <div className="posts-grid">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <nav className="pagination" aria-label="Posts pagination">
+                <button
+                  type="button"
+                  className="pagination-button"
+                  onClick={() => setPage(current => Math.max(current - 1, 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </button>
+                <span className="pagination-status" aria-live="polite">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  className="pagination-button"
+                  onClick={() => setPage(current => Math.min(current + 1, totalPages))}
+                  disabled={page === totalPages}
+                >
+                  Next
+                </button>
+              </nav>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -202,6 +202,33 @@ const PostDetail: React.FC = () => {
 
             <h1>{post.title}</h1>
 
+            {(post.developer || post.original_title || post.original_link) && (
+              <dl className="post-original-info">
+                {post.developer && (
+                  <div>
+                    <dt>Developer</dt>
+                    <dd>{post.developer}</dd>
+                  </div>
+                )}
+                {post.original_title && (
+                  <div>
+                    <dt>Original title</dt>
+                    <dd>{post.original_title}</dd>
+                  </div>
+                )}
+                {post.original_link && (
+                  <div>
+                    <dt>Original link</dt>
+                    <dd>
+                      <a href={post.original_link} target="_blank" rel="noopener noreferrer">
+                        Visit the original page
+                      </a>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            )}
+
             <div className="post-meta">
               <div className="post-author">
                 {post.author_avatar && (
