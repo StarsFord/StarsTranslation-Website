@@ -1,6 +1,23 @@
 import React from 'react';
-import { partners, Partner } from '../data/PartnersData';
+import { partners, Partner, socials, SocialLink } from '../data/PartnersData';
 import './Partners.css';
+
+const SocialCard: React.FC<{ social: SocialLink }> = ({ social }) => (
+  <a
+    href={social.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="social-card"
+    style={{ '--social-accent': social.accent } as React.CSSProperties}
+  >
+    <span className="social-card-icon" aria-hidden="true">{social.shortLabel}</span>
+    <span className="social-card-content">
+      <strong className="social-card-name">{social.name}</strong>
+      <span className="social-card-description">{social.description}</span>
+      <span className="social-card-link">{social.callToAction} →</span>
+    </span>
+  </a>
+);
 
 const PartnerCard: React.FC<{ partner: Partner }> = ({ partner }) => {
   const initials = partner.name
@@ -44,10 +61,21 @@ const Partners: React.FC = () => {
     <div className="partners-page">
       <div className="container">
         <div className="partners-hero">
-          <h1 className="partners-title">Our Partners</h1>
+          <h1 className="partners-title">StarsTranslations Socials</h1>
           <p className="partners-subtitle">
-            Groups and communities we work alongside to bring Japanese content to English audiences.
+            Follow our releases, join the community, and support future English translations.
           </p>
+        </div>
+
+        <div className="socials-grid">
+          {socials.map((social) => (
+            <SocialCard key={social.name} social={social} />
+          ))}
+        </div>
+
+        <div className="partners-section-heading">
+          <h2>Our Partners</h2>
+          <p>Groups and communities we work alongside to bring Japanese content to English audiences.</p>
         </div>
 
         {partners.length === 0 ? (

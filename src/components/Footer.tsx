@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { partners } from '../data/PartnersData';
+import { partners, socials } from '../data/PartnersData';
 import './Footer.css';
 
 const Footer: React.FC = () => {
@@ -14,10 +14,16 @@ const Footer: React.FC = () => {
           </div>
 
           <div className="footer-section">
-            <h4>Support Us</h4>
-            <a href="https://patreon.com/StarsTranslations" target="_blank" rel="noopener noreferrer" className="patreon-link">
-              Support on Patreon
-            </a>
+            <h4>Follow &amp; Support</h4>
+            <ul className="footer-partners-list">
+              {socials.map((social) => (
+                <li key={social.name}>
+                  <a href={social.url} target="_blank" rel="noopener noreferrer" className="footer-partner-link">
+                    {social.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {partners.length > 0 && (
